@@ -1,6 +1,14 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from stockfish import Stockfish
+
+engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
+stockfish_engine = Stockfish(
+    path=engine_path,
+    depth=25,
+    parameters={"Threads": 2, "Minimum Thinking Time": 30}
+)
 
 app = FastAPI()
 app.add_middleware(
@@ -15,10 +23,12 @@ class Position(BaseModel):
 
 @app.post("/analyze")
 def analyze_position(position: Position):
-    print(f"position received from React: {position.fen}")
-
+    stockfish_engine.set_fen_position(position.fen)
+    best_move = stockfish_engine.get_best_move()
+    evaluation = stockfish_engine.get_evaluation()
+    
     return {
-        "evaluation": "+1.5",
-        "best_move": "e2e4"
+        "evaluation": evaluation,
+        "best_move": best_move
     }
 

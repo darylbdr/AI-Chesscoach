@@ -25,7 +25,7 @@ function App() {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ pgn: gameCopy.pgn() })
+      body: JSON.stringify({ fen: gameCopy.fen(), pgn:gameCopy.pgn() })
     }).then(response => response.json())
       .then(data => {
         console.log("The coach said: ", data)

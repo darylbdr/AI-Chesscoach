@@ -20,6 +20,7 @@ app.add_middleware(
 )
 class Position(BaseModel):
     fen: str
+    pgn: str
 
 @app.post("/analyze")
 def analyze_position(position: Position):
@@ -32,3 +33,5 @@ def analyze_position(position: Position):
         "best_move": best_move
     }
 
+def get_llm_response():
+    pass

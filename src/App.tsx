@@ -7,6 +7,21 @@ function App() {
   const [game, setGame] = useState(new Chess())
   const [bestMove, setBestMove] = useState('');
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
+  const rawHistory = game.history();
+  const formattedHistory = formatMoveHistory(rawHistory);
+
+  console.log(formattedHistory);
+  function formatMoveHistory(history: string[]){
+    const movePairs = [];
+
+    for (let i = 0; i< history.length; i+= 2){
+      const whiteMove = history[i]
+      const blackMove = history[i+1] ?? undefined
+      movePairs.push([whiteMove, blackMove])
+    }
+    return movePairs;
+  }
+
 
   function onSquareClick() {
     setSquareStyles({});
@@ -80,9 +95,38 @@ function App() {
   }
 
   return (
-    <div style={{ width: '500px', margin: '50px auto 50px 100px' }}>
-      <Chessboard options={chessboardOptions} />
+    <div style={{ margin: '50px auto 50px 250px' , display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch'}}>
+      <Chessboard options={chessboardOptions}/>
+      
+      <div style={{ width: "50%", position: 'relative', overflowY: 'auto'}}>
+        <div className="history-container" style={{ overflowY: 'auto', flex: 1, position: 'absolute'}}>
+        <table style={{borderCollapse: 'collapse', width: '100%'}}>
+          <tbody>
+            {formattedHistory.map((pair, index) =>{
+              return (
+                <tr key={index}>
+                  <td style={{
+                    paddingRight: '55px',
+                    color: 'gray',
+                    paddingLeft: '10px',
+                    backgroundColor: '#313442f7',
+                    borderRight: '1px solid #141621',
+                    margin: 0
+                  }}
+                  >
+                  {index + 1}.</td>
+                  <td style={{ paddingLeft: '5px' ,paddingRight: '200px', borderRight: '1px solid #29292a' }}>{pair[0]}</td>
+                  <td style={{ paddingLeft: '10px' ,paddingRight: '200px', borderRight: '1px solid #29292a'}}>{pair[1] ?? ''}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      </div>
+      
     </div>
+
   );
 }
 

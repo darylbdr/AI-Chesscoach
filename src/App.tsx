@@ -102,21 +102,37 @@ function App() {
         <div className="history-container" style={{ overflowY: 'auto', flex: 1, position: 'absolute'}}>
         <table style={{borderCollapse: 'collapse', width: '100%'}}>
           <tbody>
+            
             {formattedHistory.map((pair, index) =>{
+              const totalMoves = rawHistory.length;
+              const isLastWhiteMove =  (index * 2) == (totalMoves - 1)
+              const isLastBlackMove =  (index * 2) + 1 == (totalMoves - 1)
+
               return (
                 <tr key={index}>
+
                   <td style={{
                     paddingRight: '55px',
                     color: 'gray',
                     paddingLeft: '10px',
-                    backgroundColor: '#313442f7',
+                    backgroundColor: '#313442f7' ,
                     borderRight: '1px solid #141621',
                     margin: 0
-                  }}
-                  >
-                  {index + 1}.</td>
-                  <td style={{ paddingLeft: '5px' ,paddingRight: '200px', borderRight: '1px solid #29292a' }}>{pair[0]}</td>
-                  <td style={{ paddingLeft: '10px' ,paddingRight: '200px', borderRight: '1px solid #29292a'}}>{pair[1] ?? ''}</td>
+                  }}>{index + 1}.</td>
+
+                  <td style={{
+                    paddingLeft: '5px' ,
+                    paddingRight: '200px',
+                    borderRight: '1px solid #29292a',
+                    backgroundColor: isLastWhiteMove ? '#1b31937d' : "rgb(22, 23, 29)"
+                  }}>{pair[0]}</td>
+
+                  <td style={{
+                    paddingLeft: '10px',
+                    paddingRight: '200px',
+                    borderRight: '1px solid #29292a',
+                    backgroundColor: isLastBlackMove ? '#1b31937d' : "rgb(22, 23, 29)"
+                  }}>{pair[1] ?? ''}</td>
                 </tr>
               )
             })}

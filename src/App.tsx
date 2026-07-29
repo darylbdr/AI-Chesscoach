@@ -1,11 +1,17 @@
 import { useState } from 'react'
-import { Chess } from 'chess.js'
+import { Chess, type Square } from 'chess.js'
 import { Chessboard, type PieceDropHandlerArgs } from 'react-chessboard'
 import './App.css'
 
 function App() {
   const [game, setGame] = useState(new Chess())
+  const [bestMove, setBestMove] = useState('');
   const chessboardOptions = {
+    arrows: bestMove ? [{
+        startSquare: bestMove.substring(0, 2) as Square,
+        endSquare: bestMove.substring(2, 4) as Square,
+        color: 'rgb(6, 134, 138)'
+      }] : undefined,
     position: game.fen(),
     onPieceDrop: onDrop
   }
@@ -28,7 +34,7 @@ function App() {
       body: JSON.stringify({ fen: gameCopy.fen(), pgn:gameCopy.pgn() })
     }).then(response => response.json())
       .then(data => {
-        console.log("The coach said: ", data)
+        setBestMove(data.best_move)
       })
       .catch(error => {
         console.error("Error during communication:", error)

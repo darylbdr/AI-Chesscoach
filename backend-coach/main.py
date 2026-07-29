@@ -29,7 +29,6 @@ def analyze_position(position: Position):
     evaluation = stockfish_engine.get_evaluation()
     
     return {
-        "evaluation": evaluation,
         "best_move": best_move
     }
 

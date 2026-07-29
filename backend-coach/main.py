@@ -6,8 +6,8 @@ from stockfish import Stockfish
 engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
 stockfish_engine = Stockfish(
     path=engine_path,
-    depth=25,
-    parameters={"Threads": 2, "Minimum Thinking Time": 30}
+    depth=18,
+    # parameters={"Threads": 2, "Minimum Thinking Time": 30}
 )
 
 app = FastAPI()

@@ -10,7 +10,6 @@ function App() {
   const rawHistory = game.history();
   const formattedHistory = formatMoveHistory(rawHistory);
 
-  console.log(formattedHistory);
   function formatMoveHistory(history: string[]){
     const movePairs = [];
 
@@ -87,7 +86,11 @@ function App() {
       if (!newGameBoard) return false;
 
       setGame(gameCopy);
-      findBestMove(gameCopy);
+      setSquareStyles({
+        [newGameBoard.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+        [newGameBoard.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
+    });
+      // findBestMove(gameCopy);
       return true;
     } catch {
       return false;

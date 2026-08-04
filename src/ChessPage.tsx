@@ -3,8 +3,7 @@ import { Chess, type Square } from 'chess.js'
 import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
 
-function ChessPage() {
-  const [game, setGame] = useState(new Chess())
+function ChessPage({game} : {game: Chess}) {
   const [bestMove, setBestMove] = useState('');
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const rawHistory = game.history();
@@ -85,7 +84,7 @@ function ChessPage() {
       const newGameBoard = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
       if (!newGameBoard) return false;
 
-      setGame(gameCopy);
+      // setGame(gameCopy);
       setSquareStyles({
         [newGameBoard.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
         [newGameBoard.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 

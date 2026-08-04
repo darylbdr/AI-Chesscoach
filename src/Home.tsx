@@ -2,29 +2,23 @@ import { useState } from "react";
 import { Chess } from "chess.js";
 import { useNavigate } from "react-router";
 
-function Home(){
 
+type HomeProps = {
+    setGame: (game: Chess) => void;
+}
+
+function Home( {setGame} : HomeProps){
     const [pgn, setPgn] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
-    const [currentChessMove, setCurrentChessMove] = useState(0);
+    const navigate = useNavigate()
 
-    const navigate = useNavigate();
-
-    function goToNextMove(){
-        setCurrentChessMove(currentChessMove + 1) ? 
-    }
-
-    function goToPreviousMove(){
-
-    }
-
-
-    const handleAnalyze = () =>{
+    const handleAnalyze = () => {
         const chessGame = new Chess();
         const moveList = [];
         try
         {
             chessGame.loadPgn(pgn);
+            setGame(chessGame);
             moveList.push(chessGame.history());
             setErrorMessage("")
         }
@@ -33,6 +27,8 @@ function Home(){
             setErrorMessage("This PGN is invalid. Please check it.")
             return;    
         }
+        
+        navigate("/board");
     }
 
 

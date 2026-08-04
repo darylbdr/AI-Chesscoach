@@ -1,13 +1,18 @@
 import { useState } from 'react'
-import { Chess, type Square } from 'chess.js'
+import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 function ChessPage({game} : {game: Chess}) {
+  const [gameCopy, setGameCopy] = useState(new Chess());
   const [bestMove, setBestMove] = useState('');
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
+  const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const rawHistory = game.history();
+  const verboseHistory = game.history({verbose: true});
   const formattedHistory = formatMoveHistory(rawHistory);
+  const totalMoves = rawHistory.length;
 
   function formatMoveHistory(history: string[]){
     const movePairs = [];
@@ -18,6 +23,46 @@ function ChessPage({game} : {game: Chess}) {
       movePairs.push([whiteMove, blackMove])
     }
     return movePairs;
+  }
+  
+  function chessMove(actualMove: Move){
+    if (!actualMove) return false;
+
+    setGameCopy( prev =>{
+      const nextGame = new Chess(prev.fen());
+      nextGame.move({
+        from: actualMove.from,
+        to: actualMove.to,
+        promotion: actualMove.promotion,
+      });
+
+      setSquareStyles({
+        [actualMove.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+        [actualMove.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
+      });
+      
+      return nextGame;
+    });
+
+    return true;
+    // findBestMove(gameCopy);
+  }
+
+  function goToNextMove(){
+    const nextIndex = currentMoveIndex + 1
+    if (nextIndex > totalMoves) return
+
+    setCurrentMoveIndex(nextIndex);
+    chessMove(verboseHistory[nextIndex]);
+  }
+
+  function goTopreviousMove(){
+    const prevIndex = currentMoveIndex - 1;
+
+    if (prevIndex < 0) return
+
+    setCurrentMoveIndex(prevIndex);
+    chessMove(verboseHistory[prevIndex]);
   }
 
 
@@ -63,50 +108,47 @@ function ChessPage({game} : {game: Chess}) {
         endSquare: bestMove.substring(2, 4) as Square,
         color: 'rgba(6, 134, 138, 0.9)'
       }] : undefined,
-    position: game.fen(),
+    position: gameCopy.fen(),
     onSquareClick,
     onSquareRightClick,
     squareStyles,
-    onPieceDrop: onDrop
+    // onPieceDrop: onDrop,
+    boardStyle: {width: '80vh'}
   }
 
-  function onDrop({
-    sourceSquare,
-    targetSquare,
-  }: PieceDropHandlerArgs) {
-    if (!targetSquare){
-      return false;
-    }
-    const gameCopy = new Chess();
-    gameCopy.loadPgn(game.pgn());
+  // function onDrop({
+  //   sourceSquare,
+  //   targetSquare,
+  // }: PieceDropHandlerArgs) {
+  //   if (!targetSquare){
+  //     return false;
+  //   }
 
-    try {
-      const newGameBoard = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
-      if (!newGameBoard) return false;
+  //   try {
+  //     const newGameBoard = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
+  //     if (!newGameBoard) return false;
 
-      // setGame(gameCopy);
-      setSquareStyles({
-        [newGameBoard.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
-        [newGameBoard.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
-    });
-      // findBestMove(gameCopy);
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  //     // setGameCopy(gameCopy);
+  //     setSquareStyles({
+  //       [newGameBoard.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+  //       [newGameBoard.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
+  //   });
+  //     // findBestMove(gameCopy);
+  //     return true;
+  //   } catch {
+  //     return false;
+  //   }
+  // }
 
   return (
-    <div style={{ margin: '50px auto 50px 250px' , display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch'}}>
+    <div style={{ margin: '50px auto 50px 250px', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch', position:'relative'}}>
       <Chessboard options={chessboardOptions}/>
-      
-      <div style={{ width: "50%", position: 'relative', overflowY: 'auto'}}>
-        <div className="history-container" style={{ overflowY: 'auto', flex: 1, position: 'absolute'}}>
+  
+      <div className="history-container" style={{ overflowY: 'auto',  maxHeight: "75vh"}}>
         <table style={{borderCollapse: 'collapse', width: '100%'}}>
           <tbody>
             
             {formattedHistory.map((pair, index) =>{
-              const totalMoves = rawHistory.length;
               const isLastWhiteMove =  (index * 2) == (totalMoves - 1)
               const isLastBlackMove =  (index * 2) + 1 == (totalMoves - 1)
 
@@ -141,8 +183,26 @@ function ChessPage({game} : {game: Chess}) {
           </tbody>
         </table>
       </div>
+
+      <div className="replay-binds" style={{alignSelf: 'flex-start', position: 'absolute', left: '85vh'}}>
+
+        <button style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+           <ChevronsLeft size={30} strokeWidth={3.2} color="gray"/>
+        </button>
+
+        <button onClick={goTopreviousMove} style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None' }}>
+           <ChevronLeft size={30} strokeWidth={3.2} color="gray"/>
+        </button>
+
+        <button onClick={goToNextMove} style={{paddingLeft: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None' }}>
+           <ChevronRight size={30} strokeWidth={3.2} color="gray"/> 
+        </button>
+
+        <button style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+          <ChevronsRight size={30} strokeWidth={3.2} color="gray"/>
+        </button>
+
       </div>
-      
     </div>
 
   );

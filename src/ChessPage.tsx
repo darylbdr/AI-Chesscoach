@@ -10,6 +10,7 @@ function ChessPage({game} : {game: Chess}) {
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const rawHistory = game.history();
+  const [fenHistory, setFenHistory] = useState<string[]>([]);
   const verboseHistory = game.history({verbose: true});
   const formattedHistory = formatMoveHistory(rawHistory);
   const totalMoves = rawHistory.length;
@@ -35,12 +36,13 @@ function ChessPage({game} : {game: Chess}) {
         to: actualMove.to,
         promotion: actualMove.promotion,
       });
-
+      
+      setFenHistory((prev) => [...prev, nextGame.fen()]);
       setSquareStyles({
         [actualMove.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
         [actualMove.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
       });
-      
+
       return nextGame;
     });
 
@@ -59,12 +61,11 @@ function ChessPage({game} : {game: Chess}) {
   }
 
   function goTopreviousMove(){
+    if (currentMoveIndex <= 0) return;
+
     const prevIndex = currentMoveIndex - 1;
-
-    if (prevIndex < 0) return
-
     setCurrentMoveIndex(prevIndex);
-    chessMove(verboseHistory[prevIndex]);
+    setGameCopy(new Chess(fenHistory[prevIndex]));
   }
 
 

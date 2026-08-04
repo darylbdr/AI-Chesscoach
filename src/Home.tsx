@@ -1,10 +1,38 @@
+import { useState } from "react";
+import { Chess } from "chess.js";
 import { useNavigate } from "react-router";
 
 function Home(){
 
+    const [pgn, setPgn] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [currentChessMove, setCurrentChessMove] = useState(0);
+
     const navigate = useNavigate();
+
+    function goToNextMove(){
+        setCurrentChessMove(currentChessMove + 1) ? 
+    }
+
+    function goToPreviousMove(){
+
+    }
+
+
     const handleAnalyze = () =>{
-        navigate('/board');
+        const chessGame = new Chess();
+        const moveList = [];
+        try
+        {
+            chessGame.loadPgn(pgn);
+            moveList.push(chessGame.history());
+            setErrorMessage("")
+        }
+        catch(e){
+            console.log("Invalid PGN: ", e);
+            setErrorMessage("This PGN is invalid. Please check it.")
+            return;    
+        }
     }
 
 
@@ -28,7 +56,7 @@ function Home(){
                 display:'block',
                 marginInlineStart: '45px',
                 marginInlineEnd: '0px'
-            }}>You just need to load a PGN of the game you want to analyze</p>
+            }}>You just need to load the PGN of the game you want to analyze</p>
             
             <p style={{
                 paddingTop: '12px',
@@ -38,7 +66,7 @@ function Home(){
                 fontSize: '15px'
             }}>Paste the PGN below</p>
             
-            <textarea style={{
+            <textarea value={pgn} onChange={(e) => setPgn(e.target.value)} style={{
                 width: '90%',
                 height: '20vh',
                 marginTop: '5px',
@@ -46,6 +74,10 @@ function Home(){
                 borderRadius: '7px',
                 
             }}></textarea>
+
+            {errorMessage && (
+                <p style={{ color: "red" }}>{errorMessage}</p>
+            )}
             
             <button onClick={handleAnalyze} style={{
                 margin: '0 0px 40px 0',

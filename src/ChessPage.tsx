@@ -50,10 +50,12 @@ function ChessPage({game} : {game: Chess}) {
 
   function goToNextMove(){
     const nextIndex = currentMoveIndex + 1
-    if (nextIndex > totalMoves) return
+    if (nextIndex > totalMoves - 1) return
 
     setCurrentMoveIndex(nextIndex);
     chessMove(verboseHistory[nextIndex]);
+
+    console.log(currentMoveIndex)
   }
 
   function goTopreviousMove(){
@@ -149,8 +151,9 @@ function ChessPage({game} : {game: Chess}) {
           <tbody>
             
             {formattedHistory.map((pair, index) =>{
-              const isLastWhiteMove =  (index * 2) == (totalMoves - 1)
-              const isLastBlackMove =  (index * 2) + 1 == (totalMoves - 1)
+
+              const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
+              const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
 
               return (
                 <tr key={index}>

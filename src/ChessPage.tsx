@@ -9,8 +9,8 @@ function ChessPage({game} : {game: Chess}) {
   const [bestMove, setBestMove] = useState('');
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
-  const rawHistory = game.history();
   const [fenHistory, setFenHistory] = useState<string[]>([]);
+  const rawHistory = game.history();
   const verboseHistory = game.history({verbose: true});
   const formattedHistory = formatMoveHistory(rawHistory);
   const totalMoves = rawHistory.length;
@@ -41,28 +41,23 @@ function ChessPage({game} : {game: Chess}) {
     setFenHistory(history);
   }
 
-
   function chessMove(actualMove: Move){
     if (!actualMove) return false;
 
-    setGameCopy( prev => {
-      const nextGame = new Chess(prev.fen());
-      nextGame.move({
-        from: actualMove.from,
-        to: actualMove.to,
-        promotion: actualMove.promotion,
-      });
-      
-      setSquareStyles({
-        [actualMove.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
-        [actualMove.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
-      });
+    const nextGame = new Chess(gameCopy.fen())
+    nextGame.move({
+      from: actualMove.from,
+      to: actualMove.to,
+      promotion: actualMove.promotion,
+    });
 
-      return nextGame;
+    setGameCopy(nextGame);
+    setSquareStyles({
+      [actualMove.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+      [actualMove.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
     });
 
     return true;
-    // findBestMove(gameCopy);
   }
 
   function goToFirstMove(){
@@ -131,21 +126,27 @@ function ChessPage({game} : {game: Chess}) {
     });
   }
 
-  async function findBestMove(gameCopy: Chess){
-    fetch('http://localhost:8000/analyze', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ fen: gameCopy.fen(), pgn:gameCopy.pgn() })
-    }).then(response => response.json())
-      .then(data => {
-        setBestMove(data.best_move)
-      })
-      .catch(error => {
-        console.error("Error during communication:", error)
-      })
-  }
+  useEffect(() => {
+    console.log("sending chess position to stockfish");
+
+    const eventSource = new EventSource(`http://localhost:8000/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}`);
+
+    eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log('best move: ', data.best_move);
+        console.log('depth: ', data.depth)
+        setBestMove(data.best_move);
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("SSE Error or connection closed by server:", error);
+      eventSource.close();
+    };
+    
+    return () => {
+      eventSource.close();
+    }
+  }, [gameCopy]);
     
   const chessboardOptions = {
     arrows: bestMove ? [{

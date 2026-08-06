@@ -31,6 +31,17 @@ function Home( {setGame} : HomeProps){
         navigate("/board");
     }
 
+    const autoLoad = () => {
+        setPgn(`1. e4 c6 2. Nf3 d5 3. exd5 cxd5 4. Nc3 Nf6 5. d4 Bg4 6. h3 Bxf3 7. Qxf3 e6 8.
+	Bg5 Be7 9. O-O-O O-O 10. Bxf6 Bxf6 11. g4 Nc6 12. Bd3 Nxd4 13. Qe3 h6 
+	14. Nb5
+	Bg5 15. f4 Bf6 16. Nxd4 Rc8 17. g5 Be7 18. gxh6 g6 19. Rhg1 Kh7 20. f5 Rc6 21.
+	fxg6+ fxg6 22. Bxg6+ Kh8 23. Qe5+ Bf6 24. Nxe6 Rxc2+ 25. Kxc2 Qc8+ 26. Kd3 Bxe5
+	27. Bf5 Rxf5 28. Rg7 Qxe6 29. Rdg1 Rf3+ 30. Ke2 Bxg7+ 31. Kxf3 Bxh6 32. b4 Qe5
+	33. Rg4 Qe3+ 34. Kg2 Bf4 35. Rh4+ Kg7 36. Rg4+ Kf6 37. Rxf4+ Ke5 38. Re4+ Kxe4
+	39. Kf1 Qd2 40. Kg1 Ke3 41. a3 Qf2+ 42. Kh1 Kf3 43. h4 Kg3 44. h5 Qg2# 0-1`);
+    }
+
 
     return (
         <div style={{
@@ -84,6 +95,16 @@ function Home( {setGame} : HomeProps){
                 fontFamily: 'Roboto, sans-serif',
                 border: 'None'
             }}>Analyze the game</button>
+            
+            <button onClick={autoLoad} style={{
+                margin: '0 0px 40px 40px',
+                textTransform: 'uppercase',
+                background: 'hsl(209 79% 56%)',
+                padding:'.8em 1em',
+                borderRadius: '7px',
+                fontFamily: 'Roboto, sans-serif',
+                border: 'None'
+            }}>autoload</button>
         </div>
 
     );

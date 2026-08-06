@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
@@ -15,6 +15,10 @@ function ChessPage({game} : {game: Chess}) {
   const formattedHistory = formatMoveHistory(rawHistory);
   const totalMoves = rawHistory.length;
 
+  useEffect(() => {
+    fillFenHistory();
+  }, [game]);
+
   function formatMoveHistory(history: string[]){
     const movePairs = [];
 
@@ -26,10 +30,22 @@ function ChessPage({game} : {game: Chess}) {
     return movePairs;
   }
   
+  function fillFenHistory(){
+    const fullGame = new Chess();
+    const history:string[] = [];
+    for (const move of verboseHistory) {
+      fullGame.move({from: move.from, to: move.to, promotion: move.promotion})
+      history.push(fullGame.fen())
+    }
+
+    setFenHistory(history);
+  }
+
+
   function chessMove(actualMove: Move){
     if (!actualMove) return false;
 
-    setGameCopy( prev =>{
+    setGameCopy( prev => {
       const nextGame = new Chess(prev.fen());
       nextGame.move({
         from: actualMove.from,
@@ -37,7 +53,6 @@ function ChessPage({game} : {game: Chess}) {
         promotion: actualMove.promotion,
       });
       
-      setFenHistory((prev) => [...prev, nextGame.fen()]);
       setSquareStyles({
         [actualMove.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
         [actualMove.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
@@ -56,8 +71,6 @@ function ChessPage({game} : {game: Chess}) {
 
     setCurrentMoveIndex(nextIndex);
     chessMove(verboseHistory[nextIndex]);
-
-    console.log(currentMoveIndex)
   }
 
   function goTopreviousMove(){

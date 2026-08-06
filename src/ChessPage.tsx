@@ -65,6 +65,23 @@ function ChessPage({game} : {game: Chess}) {
     // findBestMove(gameCopy);
   }
 
+  function goToFirstMove(){
+    setCurrentMoveIndex(-1);
+    setGameCopy(new Chess());
+    setSquareStyles({});
+  }
+
+  function goToLastMove(){
+    const lastIndex = totalMoves - 1
+    setCurrentMoveIndex(lastIndex);
+    setGameCopy(new Chess(fenHistory[lastIndex]))
+
+    setSquareStyles({
+        [verboseHistory[lastIndex].from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+        [verboseHistory[lastIndex].to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
+      });
+  }
+
   function goToNextMove(){
     const nextIndex = currentMoveIndex + 1
     if (nextIndex > totalMoves - 1) return
@@ -74,11 +91,23 @@ function ChessPage({game} : {game: Chess}) {
   }
 
   function goTopreviousMove(){
-    if (currentMoveIndex <= 0) return;
+    
+    if (currentMoveIndex == 0) {
+      setGameCopy(new Chess());
+    }
+    else if (currentMoveIndex < 0) return;
 
     const prevIndex = currentMoveIndex - 1;
     setCurrentMoveIndex(prevIndex);
     setGameCopy(new Chess(fenHistory[prevIndex]));
+
+    if (prevIndex >= 0){
+      setSquareStyles({
+        [verboseHistory[prevIndex].from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
+        [verboseHistory[prevIndex].to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
+      });
+    }
+
   }
 
 
@@ -183,7 +212,7 @@ function ChessPage({game} : {game: Chess}) {
 
                   <td style={{
                     paddingLeft: '5px' ,
-                    paddingRight: '200px',
+                    paddingRight: '170px',
                     borderRight: '1px solid #29292a',
                     backgroundColor: isLastWhiteMove ? '#1b31937d' : "rgb(22, 23, 29)"
                   }}>{pair[0]}</td>
@@ -203,7 +232,7 @@ function ChessPage({game} : {game: Chess}) {
 
       <div className="replay-binds" style={{alignSelf: 'flex-start', position: 'absolute', left: '85vh'}}>
 
-        <button style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+        <button onClick={goToFirstMove} style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
            <ChevronsLeft size={30} strokeWidth={3.2} color="gray"/>
         </button>
 
@@ -215,7 +244,7 @@ function ChessPage({game} : {game: Chess}) {
            <ChevronRight size={30} strokeWidth={3.2} color="gray"/> 
         </button>
 
-        <button style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+        <button onClick={goToLastMove} style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
           <ChevronsRight size={30} strokeWidth={3.2} color="gray"/>
         </button>
 

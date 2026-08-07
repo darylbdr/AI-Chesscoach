@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
@@ -9,15 +9,42 @@ function ChessPage({game} : {game: Chess}) {
   const [bestMove, setBestMove] = useState('');
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
+  const [stockfishDepth, setStockfishDepth] = useState(0);
+  const [stockfishEval, setStockfishEval] = useState(0);
   const [fenHistory, setFenHistory] = useState<string[]>([]);
   const rawHistory = game.history();
   const verboseHistory = game.history({verbose: true});
   const formattedHistory = formatMoveHistory(rawHistory);
   const totalMoves = rawHistory.length;
+  const historyRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
+
 
   useEffect(() => {
     fillFenHistory();
   }, [game]);
+
+  useEffect(()=>{
+    if (!shouldAutoScrollRef) return;
+
+    const el = historyRef.current;
+    if (!el) return;
+
+    el.scrollTop = el.scrollHeight;
+  }, [currentMoveIndex])
+
+  function handleScroll(){
+    const el = historyRef.current;
+    if (!el) return;
+
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 20;
+    console.log('scrollHeight', el.scrollHeight)
+    console.log('scrollTop', el.scrollTop)
+    console.log('clientHeight', el.clientHeight)
+    console.log('                 ')
+    
+    shouldAutoScrollRef.current = atBottom;
+  }
 
   function formatMoveHistory(history: string[]){
     const movePairs = [];
@@ -133,9 +160,10 @@ function ChessPage({game} : {game: Chess}) {
 
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('best move: ', data.best_move);
-        console.log('depth: ', data.depth)
         setBestMove(data.best_move);
+        setStockfishDepth(data.depth);
+        const evaluation = data.eval
+        setStockfishEval(evaluation.value / 100);
     };
 
     eventSource.onerror = (error) => {
@@ -190,45 +218,53 @@ function ChessPage({game} : {game: Chess}) {
     <div style={{ margin: '50px auto 50px 250px', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch', position:'relative'}}>
       <Chessboard options={chessboardOptions}/>
   
-      <div className="history-container" style={{ overflowY: 'auto',  maxHeight: "75vh"}}>
-        <table style={{borderCollapse: 'collapse', width: '100%'}}>
-          <tbody>
-            
-            {formattedHistory.map((pair, index) =>{
+      <div className="history-container" style={{maxHeight: '55vh'}}>
+        <div style={{ textAlign: 'left', marginBottom: '10px', marginLeft: '6px', display: 'flex', flexDirection: 'row'}}>
+          <p style={{fontSize: '30px', fontWeight:'bold', marginRight: '50px'}}>
+            {(stockfishEval > 0) ? '+' : ''}{stockfishEval.toFixed(1)}
+            </p> 
+          <p style={{fontSize: '30px'}}>depth : {stockfishDepth}</p> 
+        </div>
+        <div ref={historyRef} onScroll={handleScroll} style = {{overflowY: 'auto', maxHeight: '70vh'}}>
+          <table style={{borderCollapse: 'collapse', width: '100%'}}>
+            <tbody>
+              
+              {formattedHistory.map((pair, index) =>{
 
-              const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
-              const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
+                const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
+                const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
 
-              return (
-                <tr key={index}>
+                return (
+                  <tr key={index}>
 
-                  <td style={{
-                    paddingRight: '55px',
-                    color: 'gray',
-                    paddingLeft: '10px',
-                    backgroundColor: '#313442f7' ,
-                    borderRight: '1px solid #141621',
-                    margin: 0
-                  }}>{index + 1}.</td>
+                    <td style={{
+                      paddingRight: '55px',
+                      color: 'gray',
+                      paddingLeft: '10px',
+                      backgroundColor: '#313442f7' ,
+                      borderRight: '1px solid #141621',
+                      margin: 0
+                    }}>{index + 1}.</td>
 
-                  <td style={{
-                    paddingLeft: '5px' ,
-                    paddingRight: '170px',
-                    borderRight: '1px solid #29292a',
-                    backgroundColor: isLastWhiteMove ? '#1b31937d' : "rgb(22, 23, 29)"
-                  }}>{pair[0]}</td>
+                    <td style={{
+                      paddingLeft: '5px' ,
+                      paddingRight: '170px',
+                      borderRight: '1px solid #29292a',
+                      backgroundColor: isLastWhiteMove ? '#1b31937d' : "rgb(22, 23, 29)"
+                    }}>{pair[0]}</td>
 
-                  <td style={{
-                    paddingLeft: '10px',
-                    paddingRight: '200px',
-                    borderRight: '1px solid #29292a',
-                    backgroundColor: isLastBlackMove ? '#1b31937d' : "rgb(22, 23, 29)"
-                  }}>{pair[1] ?? ''}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                    <td style={{
+                      paddingLeft: '10px',
+                      paddingRight: '200px',
+                      borderRight: '1px solid #29292a',
+                      backgroundColor: isLastBlackMove ? '#1b31937d' : "rgb(22, 23, 29)"
+                    }}>{pair[1] ?? ''}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="replay-binds" style={{alignSelf: 'flex-start', position: 'absolute', left: '85vh'}}>

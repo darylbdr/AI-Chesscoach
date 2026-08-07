@@ -6,12 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
 
 engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
-# stockfish_engine = Stockfish(
-#     path=engine_path,
-#     depth=12,
-#     parameters={"Threads": 2}
-# )
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -34,9 +28,11 @@ def analyze_position(fen: str):
             stockfish_engine.set_fen_position(fen)
             stockfish_engine.set_depth(depth)
             best_move = stockfish_engine.get_best_move()
+            eval = stockfish_engine.get_evaluation()
             payload = json.dumps({
                 "depth": depth,
-                "best_move": best_move
+                "best_move": best_move,
+                "eval": eval,
             })
 
             yield f"data: {payload} \n\n"

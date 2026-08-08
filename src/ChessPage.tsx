@@ -17,34 +17,24 @@ function ChessPage({game} : {game: Chess}) {
   const formattedHistory = formatMoveHistory(rawHistory);
   const totalMoves = rawHistory.length;
   const historyRef = useRef<HTMLDivElement | null>(null);
-  const shouldAutoScrollRef = useRef(true);
 
 
   useEffect(() => {
     fillFenHistory();
   }, [game]);
 
-  useEffect(()=>{
-    if (!shouldAutoScrollRef) return;
+  useEffect(()=> {
 
     const el = historyRef.current;
     if (!el) return;
-
-    el.scrollTop = el.scrollHeight;
-  }, [currentMoveIndex])
-
-  function handleScroll(){
-    const el = historyRef.current;
-    if (!el) return;
-
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 20;
-    console.log('scrollHeight', el.scrollHeight)
-    console.log('scrollTop', el.scrollTop)
-    console.log('clientHeight', el.clientHeight)
-    console.log('                 ')
     
-    shouldAutoScrollRef.current = atBottom;
-  }
+    const table = el.querySelector('tbody');
+    if (!table) return;
+    const tableIndex = (currentMoveIndex < 0) ? 0 : Math.floor(currentMoveIndex / 2)
+    const moveRow = table.children[tableIndex];
+    moveRow.scrollIntoView({behavior: 'smooth', block:'center'})
+
+  }, [currentMoveIndex])
 
   function formatMoveHistory(history: string[]){
     const movePairs = [];
@@ -225,7 +215,7 @@ function ChessPage({game} : {game: Chess}) {
             </p> 
           <p style={{fontSize: '30px'}}>depth : {stockfishDepth}</p> 
         </div>
-        <div ref={historyRef} onScroll={handleScroll} style = {{overflowY: 'auto', maxHeight: '70vh'}}>
+        <div ref={historyRef} style = {{overflowY: 'auto', maxHeight: '70vh'}}>
           <table style={{borderCollapse: 'collapse', width: '100%'}}>
             <tbody>
               
@@ -269,7 +259,7 @@ function ChessPage({game} : {game: Chess}) {
 
       <div className="replay-binds" style={{alignSelf: 'flex-start', position: 'absolute', left: '85vh'}}>
 
-        <button onClick={goToFirstMove} style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+        <button onClick={goToFirstMove} style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', paddingTop: '10px', border:'None'}}>
            <ChevronsLeft size={30} strokeWidth={3.2} color="gray"/>
         </button>
 

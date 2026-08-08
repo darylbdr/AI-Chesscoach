@@ -26,6 +26,7 @@ def analyze_position(fen: str):
 
         for depth in stockfish_depths:
             stockfish_engine.set_fen_position(fen)
+            stockfish_engine.set_turn_perspective(False)
             stockfish_engine.set_depth(depth)
             best_move = stockfish_engine.get_best_move()
             eval = stockfish_engine.get_evaluation()

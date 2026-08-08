@@ -10,14 +10,13 @@ function ChessPage({game} : {game: Chess}) {
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [stockfishDepth, setStockfishDepth] = useState(0);
-  const [stockfishEval, setStockfishEval] = useState(0);
+  const [stockfishEval, setStockfishEval] = useState<[string, number]>(['', 0]);
   const [fenHistory, setFenHistory] = useState<string[]>([]);
   const rawHistory = game.history();
   const verboseHistory = game.history({verbose: true});
   const formattedHistory = formatMoveHistory(rawHistory);
-  const totalMoves = rawHistory.length;
   const historyRef = useRef<HTMLDivElement | null>(null);
-
+  const totalMoves = rawHistory.length;
 
   useEffect(() => {
     fillFenHistory();
@@ -47,6 +46,17 @@ function ChessPage({game} : {game: Chess}) {
     return movePairs;
   }
   
+  function formatEval(stockfishEvaluation: [string, number]){
+    if (stockfishEvaluation[0] === "mate"){
+      if (stockfishEval[1] != 0) return `#${Math.round(stockfishEval[1] * 100)}`
+      else return "-"
+    }
+    else {
+      return  `${(stockfishEval[1] > 0) ? '+' : ''}${stockfishEval[1].toFixed(1)}`
+    }
+  }
+
+
   function fillFenHistory(){
     const fullGame = new Chess();
     const history:string[] = [];
@@ -153,7 +163,8 @@ function ChessPage({game} : {game: Chess}) {
         setBestMove(data.best_move);
         setStockfishDepth(data.depth);
         const evaluation = data.eval
-        setStockfishEval(evaluation.value / 100);
+        console.log(evaluation)
+        setStockfishEval([evaluation.type, evaluation.value / 100]);
     };
 
     eventSource.onerror = (error) => {
@@ -192,12 +203,11 @@ function ChessPage({game} : {game: Chess}) {
   //     const newGameBoard = gameCopy.move({ from: sourceSquare, to: targetSquare, promotion: "q" })
   //     if (!newGameBoard) return false;
 
-  //     // setGameCopy(gameCopy);
+  //     setGameCopy(gameCopy);
   //     setSquareStyles({
   //       [newGameBoard.from]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' }, 
   //       [newGameBoard.to]: { backgroundColor: 'rgba(255, 255, 0, 0.4)' } 
   //   });
-  //     // findBestMove(gameCopy);
   //     return true;
   //   } catch {
   //     return false;
@@ -211,7 +221,7 @@ function ChessPage({game} : {game: Chess}) {
       <div className="history-container" style={{maxHeight: '55vh'}}>
         <div style={{ textAlign: 'left', marginBottom: '10px', marginLeft: '6px', display: 'flex', flexDirection: 'row'}}>
           <p style={{fontSize: '30px', fontWeight:'bold', marginRight: '50px'}}>
-            {(stockfishEval > 0) ? '+' : ''}{stockfishEval.toFixed(1)}
+            {formatEval(stockfishEval)}
             </p> 
           <p style={{fontSize: '30px'}}>depth : {stockfishDepth}</p> 
         </div>

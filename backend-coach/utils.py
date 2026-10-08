@@ -1,5 +1,3 @@
-from typing import Dict, List, Any
-
 PIECE_NAMES = {
     "P": "white_pawn",
     "N": "white_knight",

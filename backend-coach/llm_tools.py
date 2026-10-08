@@ -3,16 +3,22 @@ from utils import PIECE_NAMES
 from stockfish import Stockfish
 
 stockfish_engine = Stockfish(path=engine_path)
-fen_position = "r2q1rk1/pp3pp1/4pb1p/3p4/3n2P1/2NBQ2P/PPP2P2/2KR3R w - - 0 14"
+# fen_position = "r2q1rk1/pp3pp1/4pb1p/3p4/3n2P1/2NBQ2P/PPP2P2/2KR3R w - - 0 14"
+puzzle_position = "3r4/2p3q1/k7/2pp1b1p/P1nn4/6PP/3R1PBK/3R1Q2 w - - 0 33"
+stockfish_engine.set_fen_position(puzzle_position)
+stockfish_engine.set_turn_perspective(False)
+
 
 def call_function(tool):
     result = ""
     try:
         match tool.function.name:
             case "get_stockfish_best_move":
-                result = get_stockfish_best_move()
-            case "try_moves_sequence":
-                result = try_moves_sequence(fen_position, **tool.function.arguments)
+                result = get_stockfish_best_move(**tool.function.arguments)
+            case "try_move":
+                result = try_move(**tool.function.arguments)
+            case "play_move":
+                result = play_move(**tool.function.arguments)
             case "get_board_representation":
                 result = get_board_representation()
     except Exception as e:
@@ -25,35 +31,56 @@ def call_function(tool):
 
 def get_stockfish_best_move():
     """
-    Allowing to get the best move and evaluation of that move from stockfish engine.
+    Allowing to get the best possible move from the stockfish engine.
     returns:
-       tuple (str, dict):  A tuple composed of a string of move in algebraic notation or None, if it's a mate now 
-       and a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
-
+       best_move (str) :  a string of move in algebraic notation or None.
     """
-    stockfish_engine.set_fen_position(fen_position)
     best_move = stockfish_engine.get_best_move()
-    stockfish_engine.make_moves_from_current_position([best_move])
-    evaluation = stockfish_engine.get_evaluation()
-    return (best_move, evaluation)
+    return best_move 
     
-
-def try_moves_sequence(_current_fen:str, move_seq: list):
+def play_move(move: str):
     """
-    Allowing to try a sequence of moves and get the evaluation after those given moves
-    Args:
-        _current_fen (str): (For internal use only, do not set manually)
-        move_seq (list): A list containing the sequence of moves you want to try.
-        Each move contains the origin square and destination square, for instance "a2a3" means moving a piece from a2 to a3,
-        therefore that move should be noted 'a2a3'.
-    returns:
-        dict:  A dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
+        Allowing to play a move and get both the evaluation and the new board after that given move.
+        This is useful when trying to find tactics.
+        Args:
+            move(str): A str containing the move we want to try.
+            a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
+        returns:
+            a dictionary containing the evaluation of the move which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
+            and the new board state  dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
     """
-    stockfish_engine.set_fen_position(_current_fen)
-    stockfish_engine.make_moves_from_current_position(move_seq)
+    stockfish_engine.make_moves_from_current_position([move])
     eval = stockfish_engine.get_evaluation()
+    new_board = get_board_representation()
+    return {
+       "eval": eval,
+       "new_board_state": new_board
+    }
 
-    return eval
+def try_move(move_try: str):
+    """
+    Allowing to try a move and get the evaluation before and after making that move in order to know if its a good or bad move.
+    This is useful to evaluate a possible move consequence in order to guess if it is good or not.
+    Args:
+        move(str): A str containing the move we want to try.
+        a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
+    returns:
+        a dictionary containing the move that has been tried, the value of the evaluation before making that move and the value of the evaluation after making it.
+        both evaluations are tuples containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in).
+        But also every board information after the move.
+    """
+    eval_before = stockfish_engine.get_evaluation()
+    stockfish_engine.make_moves_from_current_position([move_try])
+    board_after_move = get_board_representation()
+    eval_after = stockfish_engine.get_evaluation()
+    stockfish_engine.set_fen_position(puzzle_position)
+
+    return {
+        "move_tried": move_try,
+        "evaluation_before": eval_before,
+        "evaluation_after":  eval_after,
+        "board_after_move": board_after_move
+    }
 
 def get_board_representation():
     """
@@ -61,7 +88,7 @@ def get_board_representation():
     Use this tool whenever the user asks about the current position of any piece, pawn, square, board configuration,
     or which pieces are present on the board.
     """
-    # stockfish_engine.set_fen_position(fen_position)
+    fen_position = stockfish_engine.get_fen_position()
     piece_placement = fen_position.split()[0]
     
     pieces = []
@@ -110,7 +137,6 @@ def get_board_representation():
     ]
 
     return {
-        # "fen": fen_position,
         "side_to_move": fen_position.split()[1],
         "white_pawns": white_pawns,
         "black_pawns": black_pawns,

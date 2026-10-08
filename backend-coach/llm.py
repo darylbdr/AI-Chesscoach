@@ -2,19 +2,15 @@ import ollama
 from llm_tools import call_function, get_stockfish_best_move, try_moves_sequence, get_board_representation
 
 CHESS_PROMPT = """
-You are a chess coach, although you are not the best player, you understand the game very well and able to find the flaws
-and explain very well why a certain move is better or worse than an other one. You can use the tool get_board_representation to
-get a visual representation of the actual position on the board.
-Actions you can perform:
-    get_stockfish_best_move which allow you to get the best move and its evaluation.
-    try_moves_sequence which allow you to get the evaluation after a given sequence of moves.
-goal: 
-    The goal is to give a concise response in no more than 2 sentences.
+You are a chess coach, although you are not the best player, you understand the game very well and able to answer any questions related to a chess game.
+You have access to tools that provide the current chessboard state. The current board state is NOT directly visible to you.
+Whenever the user asks a question about the current position
+of the game, FIRST use the appropriate chessboard tool.
 
-IMPORTANT:
-    Never suggest moves by yourself you should always use the tools you have to either evaluate a position or get the best move.
- """
-LLM_MODEL = "gemma4:e4b"
+Never claim that you do not know the current board position
+before trying to obtain it using the available tools.
+"""
+LLM_MODEL = "qwen3.5:9b"
 
 system_prompt = [
     {"role": "system", "content":CHESS_PROMPT}
@@ -23,9 +19,7 @@ try_count, max_tries = 0, 5
 messages = []
 messages.extend(system_prompt)
 msg = {"role": "user", "content":
- """Dans cette partie:  1. e4 c6 2. Nf3 d5 3. exd5 cxd5 4. Nc3 Nf6 5. d4 Bg4 6. h3 Bxf3 7. Qxf3 e6 8.
-Bg5 Be7 9. O-O-O O-O 10. Bxf6 Bxf6 11. g4 Nc6 12. Bd3 Nxd4 13. Qe3 h6
- pourquoi Nb5 est un blunder ?"""}
+ """Quelle est la position de chaque pièce sur l'échiquier?"""}
 messages.append(msg)
 
 
@@ -34,14 +28,12 @@ while try_count <= max_tries:
         model = LLM_MODEL,
         messages = messages,
         tools=[
-            get_stockfish_best_move,
-            try_moves_sequence,
             get_board_representation,
         ],
         think=True
     )
     if thinking:= response.message.thinking:
-        print("Thinking...")
+        print("Thinking... ",thinking, '\n')
 
     if tools := response.message.tool_calls:
         for tool in tools:

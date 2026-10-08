@@ -10,7 +10,7 @@ def call_function(tool):
     try:
         match tool.function.name:
             case "get_stockfish_best_move":
-                result = get_stockfish_best_move(fen_position , **tool.function.arguments)
+                result = get_stockfish_best_move()
             case "try_moves_sequence":
                 result = try_moves_sequence(fen_position, **tool.function.arguments)
             case "get_board_representation":
@@ -23,17 +23,15 @@ def call_function(tool):
 
     return result
 
-def get_stockfish_best_move(_current_fen:str):
+def get_stockfish_best_move():
     """
     Allowing to get the best move and evaluation of that move from stockfish engine.
-    args:
-        _current_fen (str): (For internal use only, do not set manually)
     returns:
        tuple (str, dict):  A tuple composed of a string of move in algebraic notation or None, if it's a mate now 
        and a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
 
     """
-    stockfish_engine.set_fen_position(_current_fen)
+    stockfish_engine.set_fen_position(fen_position)
     best_move = stockfish_engine.get_best_move()
     stockfish_engine.make_moves_from_current_position([best_move])
     evaluation = stockfish_engine.get_evaluation()
@@ -118,5 +116,4 @@ def get_board_representation():
         "black_pawns": black_pawns,
         "other_white_pieces": other_white_pieces,
         "other_black_pieces": other_black_pieces,
-        # "pieces": pieces,
     }

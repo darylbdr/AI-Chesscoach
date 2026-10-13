@@ -4,7 +4,7 @@ from stockfish import Stockfish
 
 stockfish_engine = Stockfish(path=engine_path)
 # fen_position = "r2q1rk1/pp3pp1/4pb1p/3p4/3n2P1/2NBQ2P/PPP2P2/2KR3R w - - 0 14"
-puzzle_position = "3r4/2p3q1/k7/2pp1b1p/P1nn4/6PP/3R1PBK/3R1Q2 w - - 0 33"
+puzzle_position = "8/8/2P2k2/5p1p/5KpP/1N4P1/5P2/4n3 b - - 0 58"
 stockfish_engine.set_fen_position(puzzle_position)
 stockfish_engine.set_turn_perspective(False)
 
@@ -46,7 +46,8 @@ def play_move(move: str):
             move(str): A str containing the move we want to try.
             a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
         returns:
-            a dictionary containing the evaluation before making the which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
+            a dictionary containing the evaluation before making the which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
+            (-1 means black has a mate in one, +1 means its white and 0 means the game is over)
             and the new board state  dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
             And finally the evaluation after making the move.
     """

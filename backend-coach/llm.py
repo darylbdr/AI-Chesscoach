@@ -7,7 +7,7 @@ and able to answer any questions related to a chess game.
 You have access to several tools: 
 - A tool that provide the current chessboard state. The current board state is NOT directly visible to you.
 Whenever the user asks a question about the current position of the game, FIRST use the appropriate chessboard tool.
-- A tool allowing to get the best move of the current position and its evaluation.
+- A tool allowing to get the best move of the current position and its evaluation. Always use this when looking for move don't try by yourself.
 - A tool allowing to play a move and get the new resulting position and both the evaluation before and after.
 - A tool allowing you to try a move and evaluate them both with stockfish. 
 - If you already picked the best move recommanded from stockfish, no need to try it, just play it.
@@ -24,7 +24,7 @@ try_count, max_tries = 0, 20
 messages = []
 messages.extend(system_prompt)
 msg = {"role": "user", "content":
- """what is the winning tactic in this position."""}
+ """Is there a mate in One ?"""}
 messages.append(msg)
 
 

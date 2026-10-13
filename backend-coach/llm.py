@@ -9,22 +9,22 @@ You have access to several tools:
 Whenever the user asks a question about the current position of the game, FIRST use the appropriate chessboard tool.
 - A tool allowing to get the best move of the current position and its evaluation. Always use this when looking for move don't try by yourself.
 - A tool allowing to play a move and get the new resulting position and both the evaluation before and after.
-- A tool allowing you to try a move and evaluate them both with stockfish. 
-- If you already picked the best move recommanded from stockfish, no need to try it, just play it.
-When trying to find tactics, find the best move and best response from white and black until there's not a really huge difference in evalutation.
+- A tool allowing you to try a move and evaluate them both with stockfish.
+When trying to find tactics like pins, forks, mates or else, find the best move and best response from white and black until there's not a really huge difference in evalutation.
+You should at least try 3 moves to find those tactics.
 Never claim that you do not know the current board position, before trying to obtain it using the available tools.
 When providing the final explanation don't talk about the difference of the evaluation value but whether about the pieces gained, forks or pins or else created.
 """
 LLM_MODEL = "qwen3.5:9b"
 
-system_prompt = [
+system_prompt = [   
     {"role": "system", "content":CHESS_PROMPT}
 ]
 try_count, max_tries = 0, 20
 messages = []
 messages.extend(system_prompt)
 msg = {"role": "user", "content":
- """Is there a mate in One ?"""}
+ """Is there a possible pin move for white in this position ?"""}
 messages.append(msg)
 
 

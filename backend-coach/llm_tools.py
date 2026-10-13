@@ -46,14 +46,17 @@ def play_move(move: str):
             move(str): A str containing the move we want to try.
             a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
         returns:
-            a dictionary containing the evaluation of the move which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
+            a dictionary containing the evaluation before making the which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in)
             and the new board state  dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
+            And finally the evaluation after making the move.
     """
+    eval_before = stockfish_engine.get_evaluation()
     stockfish_engine.make_moves_from_current_position([move])
-    eval = stockfish_engine.get_evaluation()
+    eval_after = stockfish_engine.get_evaluation()
     new_board = get_board_representation()
     return {
-       "eval": eval,
+       "evaluation_before": eval_before,
+       "evaluation_after": eval_after,
        "new_board_state": new_board
     }
 

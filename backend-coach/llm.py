@@ -8,17 +8,19 @@ You have access to several tools:
 - A tool that provide the current chessboard state. The current board state is NOT directly visible to you.
 Whenever the user asks a question about the current position of the game, FIRST use the appropriate chessboard tool.
 - A tool allowing to get the best move of the current position and its evaluation.
-- A tool allowing you to try a move and evaluate them both with stockfish, this is is useful for finding tactics by using it multiple times. 
-If you already picked the best move recommanded from stockfish, no need to try it, just straight play it.
-Never claim that you do not know the current board position
-before trying to obtain it using the available tools.
+- A tool allowing to play a move and get the new resulting position and both the evaluation before and after.
+- A tool allowing you to try a move and evaluate them both with stockfish. 
+- If you already picked the best move recommanded from stockfish, no need to try it, just play it.
+When trying to find tactics, find the best move and best response from white and black until there's not a really huge difference in evalutation.
+Never claim that you do not know the current board position, before trying to obtain it using the available tools.
+When providing the final explanation don't talk about the difference of the evaluation value but whether about the pieces gained, forks or pins or else created.
 """
 LLM_MODEL = "qwen3.5:9b"
 
 system_prompt = [
     {"role": "system", "content":CHESS_PROMPT}
 ]
-try_count, max_tries = 0, 5
+try_count, max_tries = 0, 20
 messages = []
 messages.extend(system_prompt)
 msg = {"role": "user", "content":
@@ -36,6 +38,7 @@ while try_count <= max_tries:
             try_move,
             play_move,
         ],
+        options={'num_ctx': 16384},
         think=True
     )
     if thinking:= response.message.thinking:

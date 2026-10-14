@@ -14,13 +14,14 @@ When trying to find tactics like pins, forks, mates or else, find the best move 
 You should at least try 3 moves to find those tactics.
 Never claim that you do not know the current board position, before trying to obtain it using the available tools.
 When providing the final explanation don't talk about the difference of the evaluation value but whether about the pieces gained, forks or pins or else created.
+Your final answer should be one sentence long.
 """
 LLM_MODEL = "qwen3.5:9b"
 
 system_prompt = [   
     {"role": "system", "content":CHESS_PROMPT}
 ]
-try_count, max_tries = 0, 20
+max_tries = 20
 messages = []
 messages.extend(system_prompt)
 msg = {"role": "user", "content":
@@ -28,7 +29,18 @@ msg = {"role": "user", "content":
 messages.append(msg)
 
 
-while try_count <= max_tries:
+for try_count in range(max_tries) + 1:
+    final_call = try_count == max_tries
+
+    if final_call:
+        messages.append({
+            "role": "user",
+            "content": (
+                "You reach your tool usage limits. Come up with your best reponse using the already obtained results."
+                "don't invent any information and specify that your analysis is incomplete."
+            )
+        })
+
     response = ollama.chat(
         model = LLM_MODEL,
         messages = messages,
@@ -42,9 +54,15 @@ while try_count <= max_tries:
         think=True
     )
     if thinking:= response.message.thinking:
-        print("Thinking... ",thinking, '\n')
+        print("Thinking... ", '\n')
 
-    if tools := response.message.tool_calls:
+    tools = response.message.tool_calls or []
+    
+    if tools:
+        if final_call:
+            print('limit reached: No output.')
+            break
+    
         tool_call_msg = {
             "role": "assistant",
             "thinking": response.message.thinking,
@@ -63,10 +81,9 @@ while try_count <= max_tries:
             }
             print('tool output:', tool_msg['content'])
             messages.append(tool_msg)
-    else:
-        content = getattr(response.message, "content", None)
-        if content and str(content).strip():
-            print(response.message.content)
-        break
+        continue
     
-    try_count += 1
+    content = getattr(response.message, "content", None)
+    if content and str(content).strip():
+        print(response.message.content)
+    break

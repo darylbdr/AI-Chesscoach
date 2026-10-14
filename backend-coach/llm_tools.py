@@ -3,10 +3,9 @@ from utils import PIECE_NAMES
 from stockfish import Stockfish
 
 stockfish_engine = Stockfish(path=engine_path)
-# fen_position = "r2q1rk1/pp3pp1/4pb1p/3p4/3n2P1/2NBQ2P/PPP2P2/2KR3R w - - 0 14"
-puzzle_position = "8/8/2P2k2/5p1p/5KpP/1N4P1/5P2/4n3 b - - 0 58"
-stockfish_engine.set_fen_position(puzzle_position)
-stockfish_engine.set_turn_perspective(False)
+fen_position = "r2q1rk1/pp3pp1/4pb1p/3p4/3n2P1/2NBQ2P/PPP2P2/2KR3R w - - 0 14"
+stockfish_engine.set_fen_position(fen_position)
+stockfish_engine.set_turn_perspective(False) # This fixes the evaluation.
 
 
 def call_function(tool):
@@ -77,7 +76,7 @@ def try_move(move_try: str):
     stockfish_engine.make_moves_from_current_position([move_try])
     board_after_move = get_board_representation()
     eval_after = stockfish_engine.get_evaluation()
-    stockfish_engine.set_fen_position(puzzle_position)
+    stockfish_engine.set_fen_position(fen_position)
 
     return {
         "move_tried": move_try,

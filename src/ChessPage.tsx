@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Chess, type Square, type Move } from 'chess.js'
-import { Chessboard, type PieceDropHandlerArgs, type SquareHandlerArgs } from 'react-chessboard'
+import { Chessboard, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 function ChessPage({game} : {game: Chess}) {
   const [gameCopy, setGameCopy] = useState(new Chess());
   const [bestMove, setBestMove] = useState('');
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState<string[]>([]);
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [stockfishDepth, setStockfishDepth] = useState(0);
@@ -45,17 +47,14 @@ function ChessPage({game} : {game: Chess}) {
     }
     return movePairs;
   }
-  
-  function formatEval(stockfishEvaluation: [string, number]){
-    if (stockfishEvaluation[0] === "mate"){
-      if (stockfishEval[1] != 0) return `#${Math.round(stockfishEval[1] * 100)}`
-      else return "-"
-    }
-    else {
-      return  `${(stockfishEval[1] > 0) ? '+' : ''}${stockfishEval[1].toFixed(1)}`
-    }
-  }
 
+  function formatEval([type, value]: [string, number]){
+    if (type === "mate") {
+      return value !== 0 ? `#${Math.round(value * 100)}` : "-";
+    }
+
+    return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
+  }
 
   function fillFenHistory(){
     const fullGame = new Chess();
@@ -149,8 +148,18 @@ function ChessPage({game} : {game: Chess}) {
           backgroundColor: 'rgba(255,0,0,0.2)'
         };
       }
+
       return newSquareStyles;
     });
+  }
+
+  function askCoach(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const question = chatInput.trim();
+    if (!question) return;
+
+    setChatMessages((messages) => [...messages, question]);
+    setChatInput('');
   }
 
   useEffect(() => {
@@ -162,8 +171,7 @@ function ChessPage({game} : {game: Chess}) {
         const data = JSON.parse(event.data);
         setBestMove(data.best_move);
         setStockfishDepth(data.depth);
-        const evaluation = data.eval
-        console.log(evaluation)
+        const evaluation = data.eval;
         setStockfishEval([evaluation.type, evaluation.value / 100]);
     };
 
@@ -215,73 +223,76 @@ function ChessPage({game} : {game: Chess}) {
   // }
 
   return (
-    <div style={{ margin: '50px auto 50px 250px', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch', position:'relative'}}>
+    <div className="chess-page" style={{ margin: '50px auto 50px 250px', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch', position:'relative'}}>
       <Chessboard options={chessboardOptions}/>
-  
-      <div className="history-container" style={{maxHeight: '55vh'}}>
-        <div style={{ textAlign: 'left', marginBottom: '10px', marginLeft: '6px', display: 'flex', flexDirection: 'row'}}>
-          <p style={{fontSize: '30px', fontWeight:'bold', marginRight: '50px'}}>
-            {formatEval(stockfishEval)}
-            </p> 
-          <p style={{fontSize: '30px'}}>depth : {stockfishDepth}</p> 
-        </div>
-        <div ref={historyRef} style = {{overflowY: 'auto', maxHeight: '70vh'}}>
-          <table style={{borderCollapse: 'collapse', width: '100%'}}>
-            <tbody>
-              
-              {formattedHistory.map((pair, index) =>{
 
-                const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
-                const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
+      <div className="analysis-sidebar">
+        <section className="coach-chat" aria-label="Chess coach chat">
+          <div className="coach-avatar" aria-hidden="true">♟</div>
+          <div className="coach-chat-content">
+            <div className="coach-response">
+              <p>Ask a question to the chesscoach</p>
+              {chatMessages.map((message, index) => (
+                <p key={`${message}-${index}`} className="coach-question">You: {message}</p>
+              ))}
+            </div>
+            <p className="coach-hint">Ask a question about the current position.</p>
+            <form className="coach-input-form" onSubmit={askCoach}>
+              <input
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                placeholder="Write your question..."
+                aria-label="Question for the chess coach"
+              />
+              <button type="submit">Ask</button>
+            </form>
+          </div>
+        </section>
 
-                return (
-                  <tr key={index}>
+        <div className="history-container">
+          <div className="history-headings">
+            <p style={{ fontSize: "25px" }}>{formatEval(stockfishEval)}</p>
+            <p style={{ fontSize: "25px" }}>Depth {stockfishDepth}</p>
+          </div>
+          <div className="history-scroll" ref={historyRef}>
+            <table className="history-table">
+              <tbody>
 
-                    <td style={{
-                      paddingRight: '55px',
-                      color: 'gray',
-                      paddingLeft: '10px',
-                      backgroundColor: '#313442f7' ,
-                      borderRight: '1px solid #141621',
-                      margin: 0
-                    }}>{index + 1}.</td>
+                {formattedHistory.map((pair, index) =>{
 
-                    <td style={{
-                      paddingLeft: '5px' ,
-                      paddingRight: '170px',
-                      borderRight: '1px solid #29292a',
-                      backgroundColor: isLastWhiteMove ? '#1b31937d' : "rgb(22, 23, 29)"
-                    }}>{pair[0]}</td>
+                  const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
+                  const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
 
-                    <td style={{
-                      paddingLeft: '10px',
-                      paddingRight: '200px',
-                      borderRight: '1px solid #29292a',
-                      backgroundColor: isLastBlackMove ? '#1b31937d' : "rgb(22, 23, 29)"
-                    }}>{pair[1] ?? ''}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr key={index}>
+
+                      <td className="move-number">{index + 1}.</td>
+                      <td className={isLastWhiteMove ? 'selected-move' : ''}>{pair[0]}</td>
+                      <td className={isLastBlackMove ? 'selected-move' : ''}>{pair[1] ?? ''}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div className="replay-binds" style={{alignSelf: 'flex-start', position: 'absolute', left: '85vh'}}>
+      <div className="replay-binds">
 
-        <button onClick={goToFirstMove} style={{paddingRight: '55px', marginRight: '16px', marginLeft: '139px', marginTop:'76vh', backgroundColor: 'rgb(22, 23, 29)', paddingTop: '10px', border:'None'}}>
+        <button onClick={goToFirstMove} aria-label="First move">
            <ChevronsLeft size={30} strokeWidth={3.2} color="gray"/>
         </button>
 
-        <button onClick={goTopreviousMove} style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None' }}>
+        <button onClick={goTopreviousMove} aria-label="Previous move">
            <ChevronLeft size={30} strokeWidth={3.2} color="gray"/>
         </button>
 
-        <button onClick={goToNextMove} style={{paddingLeft: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None' }}>
+        <button onClick={goToNextMove} aria-label="Next move">
            <ChevronRight size={30} strokeWidth={3.2} color="gray"/> 
         </button>
 
-        <button onClick={goToLastMove} style={{paddingRight: '16px', marginRight: '16px', backgroundColor: 'rgb(22, 23, 29)', border:'None'}}>
+        <button onClick={goToLastMove} aria-label="Last move">
           <ChevronsRight size={30} strokeWidth={3.2} color="gray"/>
         </button>
 

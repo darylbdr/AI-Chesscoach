@@ -43,7 +43,8 @@ function Home( {setGame} : HomeProps){
             width: '100%',
             margin: 'auto',
             maxWidth: '900px',
-            backgroundColor: '#313442f7'
+            backgroundColor: '#313442f7',
+            borderRadius: '15px',
         }}>
             <h1 style={{
                 paddingLeft: '40px',
@@ -71,8 +72,8 @@ function Home( {setGame} : HomeProps){
             <textarea value={pgn} onChange={(e) => setPgn(e.target.value)} style={{
                 width: '90%',
                 height: '20vh',
-                marginTop: '5px',
-                marginBottom: '55px',
+                marginTop: '15px',
+                marginBottom: '30px',
                 borderRadius: '7px',
                 
             }}></textarea>

@@ -4,13 +4,13 @@ Objectif : vérifier que le LLM sait lire et manipuler un échiquier.
 
 Exemples de questions :
 
-« Quelle est la position de chaque pièce ? »
-« À qui est le tour ? »
-« Le roi blanc est-il en échec ? »
-« Quelle case est contrôlée par le cavalier f3 ? »
-« Combien de pièces chaque joueur possède-t-il ? »
-« Quelle est la différence de matériel ? »
-« Donne-moi les coups légaux disponibles pour les blancs. »
+<!-- « Quelle est la position de chaque pièce ? » -->
+<!-- « À qui est le tour ? » -->
+<!-- « Le roi blanc est-il en échec ? » -->
+<!-- « Quelle case est contrôlée par le cavalier f3 ? » -->
+<!-- « Combien de pièces chaque joueur possède-t-il ? » -->
+<!-- « Quelle est la différence de matériel ? » -->
+<!-- « Donne-moi les coups légaux disponibles pour les blancs. » -->
 
 Tools potentiels :
 get_board_state, get_legal_moves, is_check, material_count.
@@ -21,12 +21,12 @@ Objectif : trouver une réponse correcte à très court terme.
 
 Questions :
 
-« Y a-t-il un mat en un ? »
+<!-- « Y a-t-il un mat en un ? » -->
 « Les blancs peuvent-ils gagner une pièce immédiatement ? »
-« Quel est le meilleur coup tactique ici ? »
-« Y a-t-il une fourchette ? »
-« Y a-t-il un clouage ? »
-« Cette combinaison fonctionne-t-elle ? »
+<!-- « Quel est le meilleur coup tactique ici ? » -->
+<!-- « Y a-t-il une fourchette ? » -->
+<!-- « Y a-t-il un clouage ? » -->
+<!-- « Cette combinaison fonctionne-t-elle ? » -->
 « Après 1.Qh7+, quelles sont les réponses légales des noirs ? »
 
 Tools potentiels :

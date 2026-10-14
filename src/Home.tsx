@@ -52,14 +52,14 @@ function Home( {setGame} : HomeProps){
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between'
-            }}>Load a game</h1>
+            }}>Import a game</h1>
             
             <p style={{
                 textAlign: 'left',
                 display:'block',
                 marginInlineStart: '45px',
                 marginInlineEnd: '0px'
-            }}>You just need to load the PGN of the game you want to analyze</p>
+            }}>You need to paste the PGN of the game you want to analyze.</p>
             
             <p style={{
                 paddingTop: '12px',
@@ -82,15 +82,7 @@ function Home( {setGame} : HomeProps){
                 <p style={{ color: "red" }}>{errorMessage}</p>
             )}
             
-            <button onClick={handleAnalyze} style={{
-                margin: '0 0px 40px 0',
-                textTransform: 'uppercase',
-                background: 'hsl(209 79% 56%)',
-                padding:'.8em 1em',
-                borderRadius: '7px',
-                fontFamily: 'Roboto, sans-serif',
-                border: 'None'
-            }}>Analyze the game</button>
+            <button className="analyze-button" onClick={handleAnalyze}>Analyze the game</button>
         </div>
 
     );

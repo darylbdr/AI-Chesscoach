@@ -3,6 +3,7 @@ import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import botImage from './assets/bot_image.png'
 
 function ChessPage({game} : {game: Chess}) {
   const [gameCopy, setGameCopy] = useState(new Chess());
@@ -223,80 +224,80 @@ function ChessPage({game} : {game: Chess}) {
   // }
 
   return (
-    <div className="chess-page" style={{ margin: '50px auto 50px 250px', display: 'flex', flexDirection: 'row', gap: '20px', alignItems: 'stretch', position:'relative'}}>
-      <Chessboard options={chessboardOptions}/>
-
-      <div className="analysis-sidebar">
-        <section className="coach-chat" aria-label="Chess coach chat">
-          <div className="coach-avatar" aria-hidden="true">♟</div>
-          <div className="coach-chat-content">
-            <div className="coach-response">
-              <p>Ask a question to the chesscoach</p>
-              {chatMessages.map((message, index) => (
-                <p key={`${message}-${index}`} className="coach-question">You: {message}</p>
-              ))}
+    <div className="chess-page">
+      <div className="analysis-row">
+        <Chessboard options={chessboardOptions}/>
+        <div className="analysis-sidebar">
+          <div className="history-container">
+            <div className="history-headings">
+              <p>{formatEval(stockfishEval)}</p>
+              <p>Depth {stockfishDepth}</p>
             </div>
-            <p className="coach-hint">Ask a question about the current position.</p>
-            <form className="coach-input-form" onSubmit={askCoach}>
-              <input
-                value={chatInput}
-                onChange={(event) => setChatInput(event.target.value)}
-                placeholder="Write your question..."
-                aria-label="Question for the chess coach"
-              />
-              <button type="submit">Ask</button>
-            </form>
+            <div className="history-scroll" ref={historyRef}>
+              <table className="history-table">
+                <tbody>
+
+                  {formattedHistory.map((pair, index) =>{
+
+                    const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
+                    const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
+
+                    return (
+                      <tr key={index}>
+
+                        <td className="move-number">{index + 1}.</td>
+                        <td className={isLastWhiteMove ? 'selected-move' : ''}>{pair[0]}</td>
+                        <td className={isLastBlackMove ? 'selected-move' : ''}>{pair[1] ?? ''}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </section>
 
-        <div className="history-container">
-          <div className="history-headings">
-            <p style={{ fontSize: "25px" }}>{formatEval(stockfishEval)}</p>
-            <p style={{ fontSize: "25px" }}>Depth {stockfishDepth}</p>
-          </div>
-          <div className="history-scroll" ref={historyRef}>
-            <table className="history-table">
-              <tbody>
+          <div className="replay-binds">
 
-                {formattedHistory.map((pair, index) =>{
+            <button onClick={goToFirstMove} aria-label="First move">
+              <ChevronsLeft size={30} strokeWidth={3.2} />
+            </button>
 
-                  const isLastWhiteMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2;
-                  const isLastBlackMove = currentMoveIndex >= 0 && currentMoveIndex === index * 2 + 1;
+            <button onClick={goTopreviousMove} aria-label="Previous move">
+              <ChevronLeft size={30} strokeWidth={3.2} />
+            </button>
 
-                  return (
-                    <tr key={index}>
+            <button onClick={goToNextMove} aria-label="Next move">
+              <ChevronRight size={30} strokeWidth={3.2} />
+            </button>
 
-                      <td className="move-number">{index + 1}.</td>
-                      <td className={isLastWhiteMove ? 'selected-move' : ''}>{pair[0]}</td>
-                      <td className={isLastBlackMove ? 'selected-move' : ''}>{pair[1] ?? ''}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <button onClick={goToLastMove} aria-label="Last move">
+              <ChevronsRight size={30} strokeWidth={3.2} />
+            </button>
+
           </div>
         </div>
       </div>
 
-      <div className="replay-binds">
-
-        <button onClick={goToFirstMove} aria-label="First move">
-           <ChevronsLeft size={30} strokeWidth={3.2} color="gray"/>
-        </button>
-
-        <button onClick={goTopreviousMove} aria-label="Previous move">
-           <ChevronLeft size={30} strokeWidth={3.2} color="gray"/>
-        </button>
-
-        <button onClick={goToNextMove} aria-label="Next move">
-           <ChevronRight size={30} strokeWidth={3.2} color="gray"/> 
-        </button>
-
-        <button onClick={goToLastMove} aria-label="Last move">
-          <ChevronsRight size={30} strokeWidth={3.2} color="gray"/>
-        </button>
-
-      </div>
+      <section className="coach-chat" aria-label="Chess coach chat">
+        <img className="coach-avatar" src={botImage} alt="Chess coach bot" />
+        <div className="coach-chat-content">
+          <div className="coach-response">
+            <p>Ask a question to the chesscoach</p>
+            {chatMessages.map((message, index) => (
+              <p key={`${message}-${index}`} className="coach-question">You: {message}</p>
+            ))}
+          </div>
+          <form className="coach-input-form" onSubmit={askCoach}>
+            <input
+              value={chatInput}
+              onChange={(event) => setChatInput(event.target.value)}
+              placeholder="Write your question..."
+              aria-label="Question for the chess coach"
+            />
+            <button type="submit">Ask</button>
+          </form>
+        </div>
+      </section>
     </div>
 
   );

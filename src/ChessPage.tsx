@@ -279,10 +279,12 @@ function ChessPage({game} : {game: Chess}) {
       </div>
 
       <section className="coach-chat" aria-label="Chess coach chat">
-        <img className="coach-avatar" src={botImage} alt="Chess coach bot" />
+        <div className='coach-chat-header'>
+          <img className="coach-avatar" src={botImage} alt="Chess coach bot" />
+          <p style={{fontWeight: 'bold', fontSize:'25px', marginTop:'10px'}}>ASK QUESTIONS TO THE CHESS COACH</p>
+        </div>
         <div className="coach-chat-content">
           <div className="coach-response">
-            <p>Ask a question to the chesscoach</p>
             {chatMessages.map((message, index) => (
               <p key={`${message}-${index}`} className="coach-question">You: {message}</p>
             ))}

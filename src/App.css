@@ -219,6 +219,7 @@
 
 .coach-chat {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   align-self: center;
   gap: 12px;
@@ -236,10 +237,17 @@
   width: 54px;
   height: 70px;
   margin-top: 16px;
+  margin-left: 235px;
   object-fit: contain;
 }
+.coach-chat-header{
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
+}
 .coach-chat-content {
+  display: flex;
   flex: 1;
   min-width: 0;
 }

@@ -14,9 +14,6 @@ app.add_middleware(
     allow_methods=["*"],             
     allow_headers=["board"],            
 )
-class Position(BaseModel):
-    fen: str
-    pgn: str
 
 @app.get("/analyze-stream", response_class=StreamingResponse)
 def analyze_position(fen: str):
@@ -43,6 +40,3 @@ def analyze_position(fen: str):
         event_generator(),
         media_type='text/event-stream'
     )
-
-def get_llm_response():
-    pass

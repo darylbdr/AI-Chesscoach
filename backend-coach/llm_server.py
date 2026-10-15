@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
 from llm import analyze_question
-import uvicorn 
+import uvicorn
 
 engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
 app = FastAPI()

@@ -21,7 +21,7 @@ MAX_TRIES = 20
 
 def analyze_question(question: str, fen: str, stockfish_engine):
     tool_list = create_tools(stockfish_engine=stockfish_engine, fen_position=fen)
-    tools = tool_list['tools']
+    tool_definitions = tool_list['tools']
     call_function = tool_list['call_function']
 
     messages = [
@@ -44,16 +44,16 @@ def analyze_question(question: str, fen: str, stockfish_engine):
         response = ollama.chat(
             model = LLM_MODEL,
             messages = messages,
-            tools=tools,
+            tools=tool_definitions,
             options={'num_ctx': 16384},
             think=True
         )
         # if response.message.thinking: # TODO need to see how to make it accessible
         #     print("Thinking... ", '\n')
 
-        tools = response.message.tool_calls or []
+        tool_calls = response.message.tool_calls or []
         
-        if tools:
+        if tool_calls:
             if final_call:
                 print('limit reached: No output.')
                 break
@@ -65,7 +65,7 @@ def analyze_question(question: str, fen: str, stockfish_engine):
             }
             messages.append(tool_call_msg) # Prevents the agent from loop calling the same tool
 
-            for tool in tools:
+            for tool in tool_calls:
                 function_name = tool.function.name
                 print(f"calling function {function_name}({tool.function.arguments})...")
                 function_output = call_function(tool)

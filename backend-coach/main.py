@@ -43,7 +43,6 @@ def analyze_position(fen: str):
         event_generator(),
         media_type='text/event-stream'
     )
-        # evaluation = stockfish_engine.get_evaluation()
 
 def get_llm_response():
     pass

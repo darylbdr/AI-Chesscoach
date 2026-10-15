@@ -284,11 +284,16 @@ function ChessPage({game} : {game: Chess}) {
           <p style={{fontWeight: 'bold', fontSize:'25px', marginTop:'10px'}}>ASK QUESTIONS TO THE CHESS COACH</p>
         </div>
         <div className="coach-chat-content">
-          <div className="coach-response">
-            {chatMessages.map((message, index) => (
-              <p key={`${message}-${index}`} className="coach-question">You: {message}</p>
-            ))}
-          </div>
+          {chatMessages.length > 0 && (
+            <div className="coach-response" aria-live="polite">
+              {chatMessages.map((message, index) => (
+                <div className="coach-message" key={`${message}-${index}`}>
+                  <p className="coach-question">You: {message}</p>
+                  <p className="coach-answer">Coach: </p>
+                </div>
+              ))}
+            </div>
+          )}
           <form className="coach-input-form" onSubmit={askCoach}>
             <input
               value={chatInput}

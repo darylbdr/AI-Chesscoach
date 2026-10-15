@@ -1,15 +1,28 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState} from 'react'
 import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import botImage from './assets/bot_image.png'
 
+type ChatMessage = {
+  id: number;
+  question: string;
+  answer: string;
+};
+
+type CoachRequest = {
+  id: number;
+  question: string;
+  fen: string;
+};
+
 function ChessPage({game} : {game: Chess}) {
   const [gameCopy, setGameCopy] = useState(new Chess());
   const [bestMove, setBestMove] = useState('');
   const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [coachRequest, setCoachRequest] = useState<CoachRequest | null>(null);
   const [squareStyles, setSquareStyles] = useState<Record<string, React.CSSProperties>>({});
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [stockfishDepth, setStockfishDepth] = useState(0);
@@ -154,20 +167,81 @@ function ChessPage({game} : {game: Chess}) {
     });
   }
 
-  function askCoach(event: FormEvent<HTMLFormElement>) {
+  function askCoach(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const question = chatInput.trim();
     if (!question) return;
 
-    setChatMessages((messages) => [...messages, question]);
+    const requestId = Date.now();
+    setChatMessages((messages) => [
+      ...messages,
+      {
+        id: requestId,
+        question,
+        answer: 'Le coach analyse la position...',
+      },
+    ]);
+    setCoachRequest({
+      id: requestId,
+      question,
+      fen: gameCopy.fen(),
+    });
     setChatInput('');
   }
+
+  useEffect(() => {
+    if (!coachRequest) return;
+
+    const request = coachRequest;
+    const controller = new AbortController();
+
+    async function getCoachAnswer() {
+      try {
+        const params = new URLSearchParams({
+          fen: request.fen,
+          question: request.question,
+        });
+        const response = await fetch(`http://localhost:8001/LLM-answer?${params}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`LLM server returned HTTP ${response.status}`);
+        }
+
+        const answer = await response.json() as string;
+        setChatMessages((messages) =>
+          messages.map((message) =>
+            message.id === request.id
+              ? { ...message, answer }
+              : message
+          )
+        );
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        console.error('Unable to retrieve the LLM answer:', error);
+        setChatMessages((messages) =>
+          messages.map((message) =>
+            message.id === request.id
+              ? { ...message, answer: 'Impossible de get the coach answer.' }
+              : message
+          )
+        );
+      }
+    }
+
+    void getCoachAnswer();
+
+    return () => {
+      controller.abort();
+    };
+  }, [coachRequest]);
 
   useEffect(() => {
     console.log("sending chess position to stockfish");
 
     const eventSource = new EventSource(`http://localhost:8000/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}`);
-
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         setBestMove(data.best_move);
@@ -287,9 +361,9 @@ function ChessPage({game} : {game: Chess}) {
           {chatMessages.length > 0 && (
             <div className="coach-response" aria-live="polite">
               {chatMessages.map((message, index) => (
-                <div className="coach-message" key={`${message}-${index}`}>
-                  <p className="coach-question">You: {message}</p>
-                  <p className="coach-answer">Coach: </p>
+                <div className="coach-message" key={`${message.id}-${index}`}>
+                  <p className="coach-question">You: {message.question}</p>
+                  <p className="coach-answer">Coach: {message.answer}</p>
                 </div>
               ))}
             </div>

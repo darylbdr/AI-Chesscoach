@@ -4,6 +4,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
 from llm import analyze_question
+import uvicorn 
 
 engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
 app = FastAPI()
@@ -30,3 +31,5 @@ def get_LLM_answer(fen: str, question: str):
         return LLM_answer
     finally:
         stockfish_engine.send_quit_command()
+
+uvicorn.run(app, host="127.0.0.1", port=8001)

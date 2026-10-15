@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
+import uvicorn
 
 engine_path = "../stockfish/stockfish-windows-x86-64-avx2.exe"
 app = FastAPI()
@@ -40,3 +41,5 @@ def analyze_position(fen: str):
         event_generator(),
         media_type='text/event-stream'
     )
+
+uvicorn.run(app, host="127.0.0.1", port=8000)

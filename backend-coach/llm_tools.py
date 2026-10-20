@@ -66,11 +66,12 @@ def create_tools(stockfish_engine, fen_position):
             both evaluations are tuples containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in).
             But also every board information after the move.
         """
+        fen_before_move = stockfish_engine.get_fen_position()
         eval_before = stockfish_engine.get_evaluation()
         stockfish_engine.make_moves_from_current_position([move_try])
         board_after_move = get_board_representation()
         eval_after = stockfish_engine.get_evaluation()
-        stockfish_engine.set_fen_position(fen_position)
+        stockfish_engine.set_fen_position(fen_before_move)
 
         return {
             "move_tried": move_try,

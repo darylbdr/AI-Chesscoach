@@ -13,8 +13,16 @@ Whenever the user asks a question about the current position of the game, FIRST 
 When trying to find tactics like pins, forks, mates or else, find the best move and best response from white and black until there's not a really huge difference in evalutation.
 You should at least try 3 moves to find those tactics.
 Never claim that you do not know the current board position, before trying to obtain it using the available tools.
-When providing the final explanation don't talk about the difference of the evaluation value but whether about the pieces gained, forks or pins or else created.
-Your final answer should be one sentence long.
+CRITICAL OUTPUT RULES:
+1. STRICTLY FORBIDDEN: Never mention numbers, scores, symbols (+, -), "centipawns", "cp", or the word "evaluation" in your final response.
+2. TRANSLATE SCORES INTO CONCEPTS: Use the tool's evaluation strictly as an internal compass, then translate it into qualitative chess terms:
+   - Small change -> "improves position", "controls space", "develops a piece"
+   - Medium change -> "wins a pawn", "creates a strong attack"
+   - Huge change -> "wins a piece", "blunders the Queen", "forces checkmate"
+3. EXAMPLE:
+   - BAD: "Playing Nf3 is best because the evaluation goes from +0.2 to +1.8."
+   - GOOD: "Playing Nf3 is the best move because it develops your knight toward the center and prepares a fork on the enemy king and rook."
+4. Keep your final response under 3 sentences.
 """
 LLM_MODEL = "qwen3.5:9b"
 MAX_TRIES = 20

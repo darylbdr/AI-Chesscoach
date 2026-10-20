@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.responses import StreamingResponse
+# from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
 from llm import analyze_question
@@ -15,9 +14,6 @@ app.add_middleware(
     allow_methods=["*"],             
     allow_headers=["board"],            
 )
-class Position(BaseModel):
-    fen: str
-    pgn: str
 
 @app.get("/LLM-answer")
 def get_LLM_answer(fen: str, question: str):
@@ -26,7 +22,7 @@ def get_LLM_answer(fen: str, question: str):
         stockfish_engine.set_fen_position(fen)
         stockfish_engine.set_turn_perspective(False)
         stockfish_engine.set_depth(12)
-        LLM_answer = analyze_question(question=question, fen=fen, stockfish_engine=stockfish_engine)# code for LLM analysis 
+        LLM_answer = analyze_question(question=question, fen=fen, stockfish_engine=stockfish_engine)
         
         return LLM_answer
     finally:

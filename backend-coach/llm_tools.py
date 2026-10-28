@@ -27,9 +27,13 @@ def create_tools(stockfish_engine, fen_position):
         Allowing to get the best possible move from the stockfish engine.
         returns:
         best_move (str) :  a string of move in algebraic notation or None.
+        eval: a dictionary containing the evaluation if playing the bestmove,
+        which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
+        (-1 means black has a mate in one, +1 means its white and 0 means the game is over).
         """
         best_move = stockfish_engine.get_best_move()
-        return best_move 
+        eval = stockfish_engine.get_evaluation()
+        return best_move, eval
         
     def play_move(move: str):
         """

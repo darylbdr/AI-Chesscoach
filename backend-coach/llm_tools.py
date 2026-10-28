@@ -33,50 +33,55 @@ def create_tools(stockfish_engine, fen_position):
         
     def play_move(move: str):
         """
-            Allowing to play a move and get both the evaluation and the new board after that given move.
-            This is useful when trying to find tactics.
+            Allowing to play a move and get both the evaluation, the opponent's best reply, and the new board after that given move.
+            This is useful when trying to find tactics and following a sequence of moves.
             Args:
                 move(str): A str containing the move we want to try.
                 a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
             returns:
-                a dictionary containing the evaluation before making the which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
-                (-1 means black has a mate in one, +1 means its white and 0 means the game is over)
-                and the new board state  dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
-                And finally the evaluation after making the move.
+                a dictionary containing the evaluation before making the move which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
+                (-1 means black has a mate in one, +1 means its white and 0 means the game is over),
+                the evaluation after making the move,
+                the opponent's best reply move (opponent_best_reply) in coordinate notation,
+                and the new board state dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
         """
         eval_before = stockfish_engine.get_evaluation()
         stockfish_engine.make_moves_from_current_position([move])
         eval_after = stockfish_engine.get_evaluation()
+        opponent_best_reply = stockfish_engine.get_best_move()
         new_board = get_board_representation()
         return {
         "evaluation_before": eval_before,
         "evaluation_after": eval_after,
+        "opponent_best_reply": opponent_best_reply,
         "new_board_state": new_board
         }
 
     def try_move(move_try: str):
         """
-        Allowing to try a move and get the evaluation before and after making that move in order to know if its a good or bad move.
-        This is useful to evaluate a possible move consequence in order to guess if it is good or not.
+        Allowing to try a move and get the evaluation before and after making that move, as well as the opponent's best reply, in order to know if its a good or bad move and how the opponent can punish it.
+        This is useful to evaluate a possible move consequence in order to guess if it is good or not. it doesn't permanently change the board.
         Args:
-            move(str): A str containing the move we want to try.
+            move_try(str): A str containing the move we want to try.
             a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
         returns:
-            a dictionary containing the move that has been tried, the value of the evaluation before making that move and the value of the evaluation after making it.
-            both evaluations are tuples containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" (checkmate in).
-            But also every board information after the move.
+            a dictionary containing the move that has been tried, the value of the evaluation before making that move, the value of the evaluation after making it,
+            the opponent's best reply move (opponent_best_reply),
+            and every board information after the move.
         """
         fen_before_move = stockfish_engine.get_fen_position()
         eval_before = stockfish_engine.get_evaluation()
         stockfish_engine.make_moves_from_current_position([move_try])
         board_after_move = get_board_representation()
         eval_after = stockfish_engine.get_evaluation()
+        opponent_best_reply = stockfish_engine.get_best_move()
         stockfish_engine.set_fen_position(fen_before_move)
 
         return {
             "move_tried": move_try,
             "evaluation_before": eval_before,
             "evaluation_after":  eval_after,
+            "opponent_best_reply": opponent_best_reply,
             "board_after_move": board_after_move
         }
 

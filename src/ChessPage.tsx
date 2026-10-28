@@ -74,6 +74,17 @@ function ChessPage({game} : {game: Chess}) {
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
   }
 
+  function getWhiteEvalPercentage([type, value]: [string, number]): number {
+    if (type === "mate") {
+      if (value > 0) return 100;
+      if (value < 0) return 0;
+      return gameCopy.turn() === 'b' ? 100 : 0;
+    }
+
+    const percentage = 100 / (1 + Math.exp(-0.4 * value));
+    return Math.min(95, Math.max(5, percentage));
+  }
+
   function fillFenHistory(){
     const fullGame = new Chess();
     const history:string[] = [];
@@ -304,7 +315,22 @@ function ChessPage({game} : {game: Chess}) {
   return (
     <div className="chess-page">
       <div className="analysis-row">
-        <Chessboard options={chessboardOptions}/>
+        <div className="board-with-eval">
+          <div
+            className="eval-bar"
+            role="meter"
+            aria-label="Position evaluation bar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(getWhiteEvalPercentage(stockfishEval))}
+          >
+            <div
+              className="eval-bar-white"
+              style={{ height: `${getWhiteEvalPercentage(stockfishEval)}%` }}
+            />
+          </div>
+          <Chessboard options={chessboardOptions}/>
+        </div>
         <div className="analysis-sidebar">
           <div className="history-container">
             <div className="history-headings">

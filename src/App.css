@@ -198,6 +198,32 @@
   gap: 20px;
 }
 
+.board-with-eval {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+}
+
+.eval-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 0 0 26px;
+  width: 26px;
+  background:  #111111 transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.eval-bar-white {
+  width: 100%;
+  background: #f0f0ed;
+  transition: height 0.35s ease;
+}
+
 .analysis-sidebar {
   display: flex;
   flex-direction: column;

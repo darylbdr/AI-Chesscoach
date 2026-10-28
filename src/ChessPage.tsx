@@ -45,9 +45,13 @@ function ChessPage({game} : {game: Chess}) {
     
     const table = el.querySelector('tbody');
     if (!table) return;
-    const tableIndex = (currentMoveIndex < 0) ? 0 : Math.floor(currentMoveIndex / 2)
-    const moveRow = table.children[tableIndex];
-    moveRow.scrollIntoView({behavior: 'smooth', block:'center'})
+    const tableIndex = (currentMoveIndex < 0) ? 0 : Math.floor(currentMoveIndex / 2);
+    const moveRow = table.children[tableIndex] as HTMLElement | undefined;
+    if (!moveRow) return;
+
+    const rowTop = moveRow.offsetTop;
+    const targetScrollTop = rowTop - (el.clientHeight / 2) + (moveRow.clientHeight / 2);
+    el.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
 
   }, [currentMoveIndex])
 

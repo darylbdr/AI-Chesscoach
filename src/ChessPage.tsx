@@ -55,6 +55,35 @@ function ChessPage({game} : {game: Chess}) {
 
   }, [currentMoveIndex])
 
+  useEffect(()=>{
+    function handleKeyDown(event: globalThis.KeyboardEvent){
+      if (document.activeElement?.tagName === "INPUT"){
+        return;
+      }
+      else {
+        if (event.key == "ArrowRight"){
+          event.preventDefault();
+          goToNextMove();
+        }
+        else if (event.key == "ArrowLeft"){
+          event.preventDefault();
+          goTopreviousMove();
+        }
+        else if (event.key == "ArrowUp"){
+          event.preventDefault();
+          goToFirstMove();
+        }
+        else if (event.key == "ArrowDown"){
+          event.preventDefault();
+          goToLastMove();
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {window.removeEventListener("keydown", handleKeyDown)}
+    }, [currentMoveIndex, fenHistory])
+
   function formatMoveHistory(history: string[]){
     const movePairs = [];
 

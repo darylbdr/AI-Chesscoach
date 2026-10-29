@@ -250,7 +250,8 @@ function ChessPage({game} : {game: Chess}) {
           fen: request.fen,
           question: request.question,
         });
-        const response = await fetch(`http://localhost:8001/LLM-answer?${params}`, {
+        const llmBaseUrl = import.meta.env.DEV ? 'http://localhost:8001' : '';
+        const response = await fetch(`${llmBaseUrl}/LLM-answer?${params}`, {
           signal: controller.signal,
         });
 
@@ -290,7 +291,8 @@ function ChessPage({game} : {game: Chess}) {
   useEffect(() => {
     console.log("sending chess position to stockfish");
 
-    const eventSource = new EventSource(`http://localhost:8000/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}`);
+    const streamBaseUrl = import.meta.env.DEV ? 'http://localhost:8000' : '';
+    const eventSource = new EventSource(`${streamBaseUrl}/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}`);
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         setBestMove(data.best_move);

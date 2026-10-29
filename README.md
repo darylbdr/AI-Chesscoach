@@ -1,3 +1,12 @@
+---
+title: AI Chess Coach
+emoji: ♟️
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+---
+
 # <img src="src/assets/bot_image.png" alt="AI Chess Coach Logo" width="42" align="center" /> AI Chess Coach
 
 **AI Chess Coach** is an interactive chess game analysis web application that combines the tactical precision of **Stockfish** with the pedagogical explanations of a **locally hosted Large Language Model (Gemma 4 via Ollama)**.

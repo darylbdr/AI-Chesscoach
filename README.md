@@ -1,12 +1,3 @@
----
-title: AI Chess Coach
-emoji: ♟️
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 7860
----
-
 # <img src="src/assets/bot_image.png" alt="AI Chess Coach Logo" width="42" align="center" /> AI Chess Coach
 
 **AI Chess Coach** is an interactive chess game analysis web application that combines the tactical precision of **Stockfish** with the pedagogical explanations of a **locally hosted Large Language Model (Gemma 4 via Ollama)**.
@@ -48,13 +39,16 @@ To solve this while running a lightweight local model (**`gemma4:e4b`** via **Ol
 
 ```
 AI-ChessCoach/
+├── Dockerfile                  # Multi-stage build (React + Python + Stockfish + Ollama)
+├── start.sh                    # Container entrypoint (starts Ollama & unified FastAPI server)
 ├── src/                        # React 19 + TypeScript + Vite Frontend
 │   ├── Home.tsx                # PGN import page
 │   ├── ChessPage.tsx           # Interactive board, eval bar, move history & coach chat
 │   └── App.css                 # Responsive styling & evaluation bar animations
 └── backend-coach/              # Python FastAPI Backend
-    ├── main.py                 # Port 8000: Stockfish SSE evaluation stream (/analyze-stream)
-    ├── llm_server.py           # Port 8001: Coach Q&A endpoint (/LLM-answer)
+    ├── server_prod.py          # Unified server (Frontend + Stockfish SSE + LLM) for Docker
+    ├── main.py                 # Dev server (Port 8000): Stockfish SSE stream (/analyze-stream)
+    ├── llm_server.py           # Dev server (Port 8001): Coach Q&A endpoint (/LLM-answer)
     ├── llm.py                  # Ollama agent loop & CHESS_PROMPT
     ├── llm_tools.py            # Stockfish & board inspection tools for the LLM
     └── utils.py                # FEN piece mapping utilities
@@ -64,7 +58,27 @@ AI-ChessCoach/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+You can run the project either **all-in-one using Docker** (no local Python, Stockfish, or Ollama installation required) or **manually for local development**.
+
+### Option A: Run with Docker (All-in-One)
+The repository includes a multi-stage [`Dockerfile`](Dockerfile) and [`start.sh`](start.sh) script that automatically build the React frontend, install the Linux Stockfish engine, install Ollama, pull the `gemma4:e4b` model, and serve the entire application on a single port via [`backend-coach/server_prod.py`](backend-coach/server_prod.py).
+
+```bash
+# 1. Build the Docker image (compiles React and pre-downloads gemma4:e4b)
+docker build -t ai-chesscoach .
+
+# 2. Run the container locally on port 8080
+docker run --rm -p 8080:8080 ai-chesscoach
+```
+*(Optional: if you have an NVIDIA GPU with the NVIDIA Container Toolkit installed, add `--gpus all` to `docker run` for hardware-accelerated LLM inference).*
+
+Then open **`http://localhost:8080`** in your browser.
+
+---
+
+### Option B: Manual Local Setup (Development)
+
+#### Prerequisites
 1. **Node.js** (v18+)
 2. **Python** (3.10+)
 3. **Stockfish binary**: Place the Stockfish executable in `./stockfish/` (configured in `backend-coach/main.py` and `backend-coach/llm_server.py`).
@@ -73,8 +87,8 @@ AI-ChessCoach/
    ollama pull gemma4:e4b
    ```
 
-### 1. Start the Python Backends
-Install the required Python packages (`fastapi`, `uvicorn`, `stockfish`, `ollama`) and run both servers from the `backend-coach` directory:
+#### 1. Start the Python Backends
+Install the required Python packages (`pip install -r backend-coach/requirements.txt`) and run both servers from the `backend-coach` directory:
 
 ```bash
 cd backend-coach
@@ -85,7 +99,7 @@ python main.py
 python llm_server.py
 ```
 
-### 2. Start the Frontend
+#### 2. Start the Frontend
 From the project root:
 
 ```bash

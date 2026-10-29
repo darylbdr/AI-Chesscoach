@@ -2,7 +2,7 @@ import { useEffect, useRef, useState} from 'react'
 import { Chess, type Square, type Move } from 'chess.js'
 import { Chessboard, type SquareHandlerArgs } from 'react-chessboard'
 import './App.css'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RotateCw } from 'lucide-react'
 import botImage from './assets/bot_image.png'
 
 type ChatMessage = {
@@ -27,6 +27,7 @@ function ChessPage({game} : {game: Chess}) {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(-1);
   const [stockfishDepth, setStockfishDepth] = useState(0);
   const [stockfishEval, setStockfishEval] = useState<[string, number]>(['', 0]);
+  const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
   const [fenHistory, setFenHistory] = useState<string[]>([]);
   const rawHistory = game.history();
   const verboseHistory = game.history({verbose: true});
@@ -148,6 +149,10 @@ function ChessPage({game} : {game: Chess}) {
     setCurrentMoveIndex(-1);
     setGameCopy(new Chess());
     setSquareStyles({});
+  }
+
+  function flipBoard(){
+    setBoardOrientation((prev) => (prev === 'white' ? 'black' : 'white'));
   }
 
   function goToLastMove(){
@@ -311,6 +316,7 @@ function ChessPage({game} : {game: Chess}) {
         color: 'rgba(6, 134, 138, 0.9)'
       }] : undefined,
     position: gameCopy.fen(),
+    boardOrientation,
     onSquareClick,
     onSquareRightClick,
     squareStyles,
@@ -346,7 +352,7 @@ function ChessPage({game} : {game: Chess}) {
       <div className="analysis-row">
         <div className="board-with-eval">
           <div
-            className="eval-bar"
+            className={`eval-bar ${boardOrientation === 'black' ? 'flipped' : ''}`}
             role="meter"
             aria-label="Position evaluation bar"
             aria-valuemin={0}
@@ -392,19 +398,23 @@ function ChessPage({game} : {game: Chess}) {
           <div className="replay-binds">
 
             <button onClick={goToFirstMove} aria-label="First move">
-              <ChevronsLeft size={30} strokeWidth={3.2} />
+              <ChevronsLeft size={26} strokeWidth={3} />
             </button>
 
             <button onClick={goTopreviousMove} aria-label="Previous move">
-              <ChevronLeft size={30} strokeWidth={3.2} />
+              <ChevronLeft size={26} strokeWidth={3} />
             </button>
 
             <button onClick={goToNextMove} aria-label="Next move">
-              <ChevronRight size={30} strokeWidth={3.2} />
+              <ChevronRight size={26} strokeWidth={3} />
             </button>
 
             <button onClick={goToLastMove} aria-label="Last move">
-              <ChevronsRight size={30} strokeWidth={3.2} />
+              <ChevronsRight size={26} strokeWidth={3} />
+            </button>
+
+            <button onClick={flipBoard} aria-label="Flip board">
+              <RotateCw size={24} strokeWidth={3} />
             </button>
 
           </div>

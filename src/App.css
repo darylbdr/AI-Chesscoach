@@ -218,6 +218,10 @@
   box-sizing: border-box;
 }
 
+.eval-bar.flipped {
+  justify-content: flex-start;
+}
+
 .eval-bar-white {
   width: 100%;
   background: #f0f0ed;
@@ -441,7 +445,7 @@
   align-self: center;
   display: flex;
   width: 100%;
-  gap: 8px;
+  gap: 6px;
 }
 
 .replay-binds button {
@@ -450,7 +454,7 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  height: 49px;
+  height: 44px;
   padding: 0;
   color: #fffefe;
   background: linear-gradient(hsl(209, 64%, 49%), hsl(209, 65%, 29%));

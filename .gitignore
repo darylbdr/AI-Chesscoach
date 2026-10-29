@@ -23,4 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 __pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
 stockfish/

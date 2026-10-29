@@ -1,4 +1,16 @@
+import re
 from utils import PIECE_NAMES
+
+def clean_uci_move(move: str) -> str:
+    """Extracts pure UCI coordinate move (e.g. 'Nd4b5' -> 'd4b5', 'e7e8q' -> 'e7e8q')."""
+    squares = re.findall(r"[a-h][1-8]", move)
+    if len(squares) >= 2:
+        uci = squares[0] + squares[1]
+        promo_match = re.search(r"[a-h][1-8]=?([qrbnQRBN])\b", move[2:])
+        if promo_match and (squares[1][1] in ("1", "8")):
+            uci += promo_match.group(1).lower()
+        return uci
+    return move.strip()
 
 def create_tools(stockfish_engine, fen_position):
     
@@ -22,11 +34,37 @@ def create_tools(stockfish_engine, fen_position):
 
         return result
 
+    def get_square_piece_map():
+        fen_str = stockfish_engine.get_fen_position()
+        piece_placement = fen_str.split()[0]
+        board = {}
+        files = "abcdefgh"
+        for rank, row in zip(range(8, 0, -1), piece_placement.split("/")):
+            file_index = 0
+            for char in row:
+                if char.isdigit():
+                    file_index += int(char)
+                    continue
+                square = f"{files[file_index]}{rank}"
+                board[square] = PIECE_NAMES[char]
+                file_index += 1
+        return board
+
+    def describe_move_impact(uci_move: str, board_before: dict):
+        origin = uci_move[:2]
+        dest = uci_move[2:4]
+        moving_piece = board_before.get(origin, "unknown_piece")
+        captured_piece = board_before.get(dest, None)
+        if captured_piece is None and moving_piece.endswith("_pawn") and origin[0] != dest[0]:
+            enemy_color = "black" if moving_piece.startswith("white_") else "white"
+            captured_piece = f"{enemy_color}_pawn (en passant)"
+        return moving_piece, (f"{captured_piece} on {dest}" if captured_piece else None)
+
     def get_stockfish_best_move():
         """
         Allowing to get the best possible move from the stockfish engine.
         returns:
-        best_move (str) :  a string of move in algebraic notation or None.
+        best_move (str) :  a string of move in coordinate notation (e.g. "e2e4") or None.
         eval: a dictionary containing the evaluation if playing the bestmove,
         which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
         (-1 means black has a mate in one, +1 means its white and 0 means the game is over).
@@ -40,8 +78,7 @@ def create_tools(stockfish_engine, fen_position):
             Allowing to play a move and get both the evaluation, the opponent's best reply, and the new board after that given move.
             This is useful when trying to find tactics and following a sequence of moves.
             Args:
-                move(str): A str containing the move we want to try.
-                a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
+                move(str): A 4-character string containing ONLY the origin square and destination square (e.g. "a2a3", "d4b5"). Do NOT include piece letters like "N", "B", "Q", "R", "K" (never write "Nd4b5").
             returns:
                 a dictionary containing the evaluation before making the move which is a tuple containing a dictionary of the current advantage with "type" as "cp" (centipawns) or "mate" 
                 (-1 means black has a mate in one, +1 means its white and 0 means the game is over),
@@ -49,12 +86,18 @@ def create_tools(stockfish_engine, fen_position):
                 the opponent's best reply move (opponent_best_reply) in coordinate notation,
                 and the new board state dictionary containing information about the side to move, all both the white and black pieces and their respective positions on the board.
         """
+        move = clean_uci_move(move)
+        board_before = get_square_piece_map()
+        moving_piece, captured_piece = describe_move_impact(move, board_before)
         eval_before = stockfish_engine.get_evaluation()
         stockfish_engine.make_moves_from_current_position([move])
         eval_after = stockfish_engine.get_evaluation()
         opponent_best_reply = stockfish_engine.get_best_move()
         new_board = get_board_representation()
         return {
+        "move_played": move,
+        "moving_piece": moving_piece,
+        "captured_piece": captured_piece,
         "evaluation_before": eval_before,
         "evaluation_after": eval_after,
         "opponent_best_reply": opponent_best_reply,
@@ -63,30 +106,32 @@ def create_tools(stockfish_engine, fen_position):
 
     def try_move(move_try: str):
         """
-        Allowing to try a move and get the evaluation before and after making that move, as well as the opponent's best reply, in order to know if its a good or bad move and how the opponent can punish it.
-        This is useful to evaluate a possible move consequence in order to guess if it is good or not. it doesn't permanently change the board.
+        Allowing to quickly test a single candidate move and get the evaluation before and after making that move, WITHOUT changing the board position (the board is immediately reset after).
+        WARNING: Because `try_move` resets the board back to the original position, you CANNOT play the opponent's reply after calling `try_move`. If you want to play a sequence of moves or see the opponent's reply, use `play_move` instead.
         Args:
-            move_try(str): A str containing the move we want to try.
-            a move is a string composed of the origin square and destination square, for instance when moving a piece from a2 to a3 we should give the argument "a2a3".
+            move_try(str): A 4-character string containing ONLY the origin square and destination square (e.g. "a2a3", "d4b5"). Do NOT include piece letters like "N", "B", "Q", "R", "K" (never write "Nd4b5").
         returns:
             a dictionary containing the move that has been tried, the value of the evaluation before making that move, the value of the evaluation after making it,
-            the opponent's best reply move (opponent_best_reply),
             and every board information after the move.
         """
+        move_try = clean_uci_move(move_try)
+        board_before = get_square_piece_map()
+        moving_piece, captured_piece = describe_move_impact(move_try, board_before)
         fen_before_move = stockfish_engine.get_fen_position()
         eval_before = stockfish_engine.get_evaluation()
         stockfish_engine.make_moves_from_current_position([move_try])
         board_after_move = get_board_representation()
         eval_after = stockfish_engine.get_evaluation()
-        opponent_best_reply = stockfish_engine.get_best_move()
         stockfish_engine.set_fen_position(fen_before_move)
 
         return {
             "move_tried": move_try,
+            "moving_piece": moving_piece,
+            "captured_piece": captured_piece,
             "evaluation_before": eval_before,
             "evaluation_after":  eval_after,
-            "opponent_best_reply": opponent_best_reply,
-            "board_after_move": board_after_move
+            "board_after_move": board_after_move,
+            "note": "Board has been reset to the position BEFORE move_tried. Use play_move(move_try) first if you want to play a continuation."
         }
 
     def get_board_representation():

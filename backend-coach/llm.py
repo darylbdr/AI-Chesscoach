@@ -54,7 +54,7 @@ def analyze_question(question: str, fen: str, stockfish_engine):
             model = LLM_MODEL,
             messages = messages,
             tools=tool_definitions,
-            options={'num_ctx': 16384},
+            options={'num_ctx': 4096},
             think=True
         )
         # if response.message.thinking: # TODO need to see how to make it accessible

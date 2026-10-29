@@ -4,6 +4,10 @@
 
 Instead of relying on cloud APIs or letting a language model guess chess moves (which typically leads to severe hallucinations), this project uses an **agentic tool-calling architecture** that grounds every explanation in real-time board states and Stockfish evaluations.
 
+<p align="center">
+  <img src="src/assets/preview.png" alt="AI Chess Coach Preview" width="900" />
+</p>
+
 ---
 
 ## ✨ Key Features

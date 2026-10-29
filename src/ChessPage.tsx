@@ -227,7 +227,7 @@ function ChessPage({game} : {game: Chess}) {
       {
         id: requestId,
         question,
-        answer: 'Le coach analyse la position...',
+        answer: 'The coach is analyzing the position...',
       },
     ]);
     setCoachRequest({
@@ -273,7 +273,7 @@ function ChessPage({game} : {game: Chess}) {
         setChatMessages((messages) =>
           messages.map((message) =>
             message.id === request.id
-              ? { ...message, answer: 'Impossible de get the coach answer.' }
+              ? { ...message, answer: 'Unable to get the coach answer.' }
               : message
           )
         );

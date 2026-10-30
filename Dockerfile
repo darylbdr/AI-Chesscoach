@@ -35,7 +35,8 @@ RUN pip install --no-cache-dir --upgrade -r ./backend-coach/requirements.txt
 # Pre-download gemma4:e4b during image build so Cloud Run cold starts are instant
 RUN ollama serve & \
     until curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; do sleep 1; done && \
-    ollama pull gemma4:e4b
+    ollama pull gemma4:12b" && \
+    chmod -R 777 /home/user/.ollama
 
 COPY --chown=user backend-coach ./backend-coach
 COPY --chown=user --from=frontend-build /app/dist ./dist

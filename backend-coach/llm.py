@@ -25,7 +25,7 @@ CRITICAL COMMUNICATION RULES:
    - GOOD (concrete chess coaching): "Playing the knight from c3 to b5 is a blunder because it leaves your e4 pawn undefended and attacks nothing. Black immediately punishes this with Nxe4, winning a central pawn with tempo while threatening f2."
 5. Keep your final answer concise (maximum 3-4 sentences), focused strictly on the concrete moves and chess concepts.
 """
-LLM_MODEL = "gemma4:e4b"
+LLM_MODEL = "gemma4:12b"
 MAX_TRIES = 20
 
 def analyze_question(question: str, fen: str, stockfish_engine):
@@ -54,7 +54,7 @@ def analyze_question(question: str, fen: str, stockfish_engine):
             model = LLM_MODEL,
             messages = messages,
             tools=tool_definitions,
-            options={'num_ctx': 4096},
+            options={'num_ctx': 16384},
             think=True
         )
         # if response.message.thinking: # TODO need to see how to make it accessible
@@ -91,3 +91,4 @@ def analyze_question(question: str, fen: str, stockfish_engine):
         if content and str(content).strip():
             return response.message.content
         break
+

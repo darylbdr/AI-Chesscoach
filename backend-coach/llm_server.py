@@ -27,6 +27,5 @@ def get_LLM_answer(fen: str, question: str):
         return LLM_answer
     finally:
         stockfish_engine.send_quit_command()
-        
-if __name__ == "__main__":
-    uvicorn.run("llm_server:app", host="127.0.0.1", port=8001, reload=True)
+
+uvicorn.run(app, host="127.0.0.1", port=8001)

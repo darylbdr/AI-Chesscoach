@@ -15,6 +15,7 @@ type CoachRequest = {
   id: number;
   question: string;
   fen: string;
+  history: { question: string; answer: string }[];
 };
 
 function ChessPage({game} : {game: Chess}) {
@@ -102,6 +103,16 @@ function ChessPage({game} : {game: Chess}) {
     }
 
     return `${value > 0 ? '+' : ''}${value.toFixed(1)}`;
+  }
+
+  function formatCoachText(text: string) {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
   }
 
   function getWhiteEvalPercentage([type, value]: [string, number]): number {
@@ -222,6 +233,10 @@ function ChessPage({game} : {game: Chess}) {
     if (!question) return;
 
     const requestId = Date.now();
+    const previousHistory = chatMessages.map(({ question: q, answer: a }) => ({
+      question: q,
+      answer: a,
+    }));
     setChatMessages((messages) => [
       ...messages,
       {
@@ -234,6 +249,7 @@ function ChessPage({game} : {game: Chess}) {
       id: requestId,
       question,
       fen: gameCopy.fen(),
+      history: previousHistory,
     });
     setChatInput('');
   }
@@ -249,6 +265,7 @@ function ChessPage({game} : {game: Chess}) {
         const params = new URLSearchParams({
           fen: request.fen,
           question: request.question,
+          history: JSON.stringify(request.history),
         });
         const llmBaseUrl = import.meta.env.DEV ? 'http://localhost:8001' : '';
         const response = await fetch(`${llmBaseUrl}/LLM-answer?${params}`, {
@@ -434,7 +451,7 @@ function ChessPage({game} : {game: Chess}) {
               {chatMessages.map((message, index) => (
                 <div className="coach-message" key={`${message.id}-${index}`}>
                   <p className="coach-question">You: {message.question}</p>
-                  <p className="coach-answer">Coach: {message.answer}</p>
+                  <p className="coach-answer">Coach: {formatCoachText(message.answer)}</p>
                 </div>
               ))}
             </div>

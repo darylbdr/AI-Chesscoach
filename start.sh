@@ -22,8 +22,8 @@ done
 echo "Available models:"
 ollama list || true
 
-echo "Preloading gemma4:12b into GPU VRAM..."
-curl -s http://127.0.0.1:11434/api/generate -d '{"model": "gemma4:12b", "keep_alive": -1}' >/dev/null 2>&1 &
+echo "Preloading gemma4:e4b into GPU VRAM..."
+curl -s http://127.0.0.1:11434/api/generate -d '{"model": "gemma4:e4b", "keep_alive": -1}' >/dev/null 2>&1 &
 
 # Stream Ollama logs to the container output
 tail -f /tmp/ollama.log &

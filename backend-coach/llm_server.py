@@ -1,5 +1,5 @@
+import json
 from fastapi import FastAPI
-# from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from stockfish import Stockfish
 from llm import analyze_question
@@ -12,18 +12,21 @@ app.add_middleware(
     allow_origins=["http://localhost:5173"],           
     allow_credentials=True,         
     allow_methods=["*"],             
-    allow_headers=["board"],            
+    allow_headers=["*"],            
 )
 
 @app.get("/LLM-answer")
-def get_LLM_answer(fen: str, question: str):
+def get_LLM_answer(fen: str, question: str, token: str = None):
     stockfish_engine = Stockfish(path=engine_path)
     try:
         stockfish_engine.set_fen_position(fen)
         stockfish_engine.set_turn_perspective(False)
         stockfish_engine.set_depth(12)
-        LLM_answer = analyze_question(question=question, fen=fen, stockfish_engine=stockfish_engine)
-        
+        LLM_answer = analyze_question(
+            question=question,
+            fen=fen,
+            stockfish_engine=stockfish_engine,
+        )
         return LLM_answer
     finally:
         stockfish_engine.send_quit_command()

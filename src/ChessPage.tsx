@@ -15,7 +15,6 @@ type CoachRequest = {
   id: number;
   question: string;
   fen: string;
-  history: { question: string; answer: string }[];
 };
 
 function ChessPage({game} : {game: Chess}) {
@@ -233,10 +232,6 @@ function ChessPage({game} : {game: Chess}) {
     if (!question) return;
 
     const requestId = Date.now();
-    const previousHistory = chatMessages.map(({ question: q, answer: a }) => ({
-      question: q,
-      answer: a,
-    }));
     setChatMessages((messages) => [
       ...messages,
       {
@@ -249,7 +244,6 @@ function ChessPage({game} : {game: Chess}) {
       id: requestId,
       question,
       fen: gameCopy.fen(),
-      history: previousHistory,
     });
     setChatInput('');
   }
@@ -262,15 +256,21 @@ function ChessPage({game} : {game: Chess}) {
 
     async function getCoachAnswer() {
       try {
+        const storedToken = localStorage.getItem("chess_access_token") || "";
         const params = new URLSearchParams({
           fen: request.fen,
           question: request.question,
-          history: JSON.stringify(request.history),
+          token: storedToken,
         });
         const llmBaseUrl = import.meta.env.DEV ? 'http://localhost:8001' : '';
         const response = await fetch(`${llmBaseUrl}/LLM-answer?${params}`, {
           signal: controller.signal,
         });
+
+        if (response.status === 403 || response.status === 401) {
+          const errData = await response.json().catch(() => ({ detail: "Demo session expired." }));
+          throw new Error(errData.detail || "Session expired");
+        }
 
         if (!response.ok) {
           throw new Error(`LLM server returned HTTP ${response.status}`);
@@ -309,7 +309,8 @@ function ChessPage({game} : {game: Chess}) {
     console.log("sending chess position to stockfish");
 
     const streamBaseUrl = import.meta.env.DEV ? 'http://localhost:8000' : '';
-    const eventSource = new EventSource(`${streamBaseUrl}/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}`);
+    const storedToken = localStorage.getItem("chess_access_token") || "";
+    const eventSource = new EventSource(`${streamBaseUrl}/analyze-stream?fen=${encodeURIComponent(gameCopy.fen())}&token=${encodeURIComponent(storedToken)}`);
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
         setBestMove(data.best_move);
